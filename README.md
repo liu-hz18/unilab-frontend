@@ -1,5 +1,7 @@
 # unilab
 
+##powered by Vue2
+
 ## Project setup
 ```
 npm install
