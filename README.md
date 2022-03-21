@@ -1,6 +1,6 @@
 # unilab
 
-##powered by Vue2
+## powered by Vue2
 
 ## Project setup
 ```

@@ -4,11 +4,15 @@
         <el-container>
             <el-header>
                 <el-menu :default-active="activeIndex" class="course-menu" mode="horizontal" @select="handleSelect">
-                    <el-menu-item index="1">课程主页</el-menu-item>
+                    <el-menu-item index="0">
+                        <i class="el-icon-s-home"></i>Home
+                    </el-menu-item>
+                    <el-menu-item index="1">本课程</el-menu-item>
                     <el-menu-item index="2">评测</el-menu-item>
                     <el-menu-item index="3">题库</el-menu-item>
                     <el-menu-item index="4">发布公告</el-menu-item>
                     <el-menu-item index="5">发布题目</el-menu-item>
+                    <el-menu-item index="6">发布作业</el-menu-item>
                 </el-menu>
             </el-header>
 
@@ -43,7 +47,7 @@
                                         {{ assignment.dueState ? '已结束' : '可提交' }}
                                 </el-tag>
                             </template>
-                            <div style="text-align: left;"> 说明: {{ assignment.introduction }} </div>
+                            <div style="text-align: left;"> 说明: {{ assignment.description }} </div>
                             <el-table
                                 :data="assignment.questions"
                                 stripe
@@ -251,16 +255,22 @@
                             <el-input v-model="questionForm.tag"></el-input>
                         </el-form-item>
                         <el-form-item label="Time Limit" style="width: 400px;" required>
-                            <el-col :span="11">
-                                <el-input-number v-model="questionForm.timeLimit" :min="1"></el-input-number>
-                            </el-col>
-                            <el-col :span="5">&nbsp;ms</el-col>
+                                <el-col :span="16">
+                                    <el-input-number v-model="questionForm.timeLimit" :min="1"></el-input-number>
+                                </el-col>
+                                <el-col :span="5">&nbsp;ms</el-col>
                         </el-form-item>
                         <el-form-item label="Memory Limit" style="width: 400px;" required>
-                            <el-col :span="11">
+                            <el-col :span="16">
                                 <el-input-number v-model="questionForm.memoryLimit" :min="1"></el-input-number>
                             </el-col>
                             <el-col :span="5">&nbsp;MB</el-col>
+                        </el-form-item>
+                        <el-form-item label="Total Score" style="width: 550px;" required>
+                            <el-col :span="10">
+                                <el-input-number v-model="questionForm.totalScore" :min="0"></el-input-number>
+                            </el-col>
+                            <el-col :span="14">&nbsp;points (所有测试点均分total score)</el-col>
                         </el-form-item>
                         <el-form-item label="Language" style="width: 400px;" required>
                             <el-select v-model="questionForm.languageSelected" placeholder="C++">
@@ -310,6 +320,41 @@
                 </el-main>
             </el-container>
 
+            <!-- homework edit and push  -->
+            <el-container v-else-if="selectIndex=='6'">
+                <el-main>
+                    <el-form ref="form" :model="homeworkForm" label-width="100px">
+                        <el-form-item label="Title" required>
+                            <el-input v-model="homeworkForm.title"></el-input>
+                        </el-form-item>
+                        <el-form-item label="Description">
+                            <el-input v-model="homeworkForm.description"></el-input>
+                        </el-form-item>
+                        <el-form-item label="Questions" required>
+                            <el-select v-model="homeworkForm.questionIds" multiple filterable placeholder="请选择题目" style="width: 800px;">
+                                <el-option
+                                    v-for="item in questionAvailable"
+                                    :key="item.id"
+                                    :label="item.id + '  ' + item.name + '  (' +  item.tag + ')'"
+                                    :value="item.id">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="Due Time" required>
+                            <el-date-picker
+                                v-model="homeworkForm.dueTime"
+                                type="datetimerange"
+                                start-placeholder="开始日期时间"
+                                end-placeholder="结束日期时间"
+                                :default-time="['00:00:00', '23:59:59']">
+                            </el-date-picker>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="onSubmit">发布作业</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-main>
+            </el-container>
 
         </el-container>
     </div>
@@ -369,7 +414,7 @@ export default {
                     assignmentName: "assignment 1",
                     dueTime: "2022/03/15 23:59",
                     dueState: true,
-                    introduction: "请尽快提交",
+                    description: "请尽快提交",
                     score: 120,
                     totalScore: 300,
                     questions: [
@@ -656,8 +701,62 @@ export default {
                 timeLimit: 1000, // ms
                 memoryLimit: 1024, // MB
                 languageSelected: 'c++',
+                totalScore: 100,
                 markdownContent: questionDesctriptionContent
             },
+            homeworkForm: {
+                title: '',
+                description: '',
+                dueTime: '',
+                questionIds: []
+            },
+            questionAvailable: [
+                {
+                    id: 0,
+                    name: "test 1",
+                    tag: "C++", 
+                },
+                {
+                    id: 1,
+                    name: "test 2",
+                    tag: "Python", 
+                },
+                {
+                    id: 2,
+                    name: "test 3",
+                    tag: "C++", 
+                },
+                {
+                    id: 3,
+                    name: "test 3",
+                    tag: "C++", 
+                },
+                {
+                    id: 4,
+                    name: "test 3",
+                    tag: "C++", 
+                },
+                {
+                    id: 5,
+                    name: "test 3",
+                    tag: "C++", 
+                },
+                {
+                    id: 6,
+                    name: "test 3",
+                    tag: "C++", 
+                },
+                {
+                    id: 7,
+                    name: "test 3",
+                    tag: "C++", 
+                },
+                {
+                    id: 8,
+                    name: "test 3",
+                    tag: "C++", 
+                }
+            ]
         }
     },
     computed: {
@@ -683,7 +782,11 @@ export default {
         handleSelect(key, keyPath) {
             console.log(key, keyPath);
             this.selectIndex = key.toString();
-            this.$router.push({ path: "/lab", query: { tabindex: this.selectIndex } });
+            if (this.selectIndex === "0") {
+                this.$router.push({ path: "/course", query: {  } });
+            } else {
+                this.$router.push({ path: "/lab", query: { tabindex: this.selectIndex } });
+            }
             // WARN: bind a key to force update table to avoid rendering failure
             this.updateKey = !this.updateKey;
         },

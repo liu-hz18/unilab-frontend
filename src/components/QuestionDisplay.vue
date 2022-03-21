@@ -3,11 +3,15 @@
         <el-container>
             <el-header>
                 <el-menu :default-active="activeIndex" class="course-menu" mode="horizontal" @select="handleSelect">
-                    <el-menu-item index="1">课程主页</el-menu-item>
+                    <el-menu-item index="0">
+                        <i class="el-icon-s-home"></i>Home
+                    </el-menu-item>
+                    <el-menu-item index="1">本课程</el-menu-item>
                     <el-menu-item index="2">评测</el-menu-item>
                     <el-menu-item index="3">题库</el-menu-item>
                     <el-menu-item index="4">发布公告</el-menu-item>
                     <el-menu-item index="5">发布题目</el-menu-item>
+                    <el-menu-item index="6">发布作业</el-menu-item>
                 </el-menu>
             </el-header>
             
@@ -190,7 +194,11 @@ export default {
             console.log(key, keyPath);
             this.selectIndex = key.toString();
             console.log("handleSelect() jump to /lab", this.selectIndex);
-            this.$router.push({ path: "/lab", query: { tabindex: this.selectIndex } });
+            if (this.selectIndex === "0") {
+                this.$router.push({ path: "/course", query: {  } });
+            } else {
+                this.$router.push({ path: "/lab", query: { tabindex: this.selectIndex } });
+            }
         },
         codeChangeMethod() {
             console.log(this.code, this.mode);
