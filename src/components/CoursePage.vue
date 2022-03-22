@@ -331,7 +331,7 @@
                             <el-input v-model="homeworkForm.description"></el-input>
                         </el-form-item>
                         <el-form-item label="Questions" required>
-                            <el-select v-model="homeworkForm.questionIds" multiple filterable placeholder="请选择题目" style="width: 800px;">
+                            <el-select v-model="homeworkForm.questionIds" multiple filterable placeholder="请选择题目(可多选)" style="width: 800px;">
                                 <el-option
                                     v-for="item in questionAvailable"
                                     :key="item.id"
@@ -344,8 +344,8 @@
                             <el-date-picker
                                 v-model="homeworkForm.dueTime"
                                 type="datetimerange"
-                                start-placeholder="开始日期时间"
-                                end-placeholder="结束日期时间"
+                                start-placeholder="作业公布时间"
+                                end-placeholder="截止提交时间"
                                 :default-time="['00:00:00', '23:59:59']">
                             </el-date-picker>
                         </el-form-item>
