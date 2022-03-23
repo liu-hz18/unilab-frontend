@@ -98,15 +98,15 @@
       </el-container>
 
       <el-dialog title="新建课程" :visible.sync="dialogFormVisible">
-        <el-form :model="createCourseForm">
-          <el-form-item label="课程名称" :label-width="'120px'" required>
+        <el-form :model="createCourseForm" label-width="140px">
+          <el-form-item label="课程名称" required>
             <el-input v-model="createCourseForm.name" autocomplete="off"></el-input>
           </el-form-item>
-          <el-form-item label="教师" :label-width="'120px'" required>
+          <el-form-item label="教师" required>
             <el-input v-model="createCourseForm.teachername" autocomplete="off"></el-input>
           </el-form-item>
-          <el-form-item label="请选择教学人员" :label-width="'120px'" required>
-            <el-select v-model="createCourseForm.teachers" placeholder="可多选" multiple filterable style="width: 600px;">
+          <el-form-item label="请选择教学人员" required>
+            <el-select v-model="createCourseForm.teachers" placeholder="可多选" multiple filterable clearable style="width: 90%;">
               <el-option
                   v-for="user in usersAvailable"
                   :key="user.id"
@@ -115,8 +115,8 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="请选择学生" :label-width="'120px'" required>
-            <el-select v-model="createCourseForm.students" placeholder="可多选" multiple filterable collapse-tags style="width: 600px;">
+          <el-form-item label="请选择或导入学生" required>
+            <el-select v-model="createCourseForm.students" placeholder="可多选" multiple filterable collapse-tags clearable style="width: 90%;">
               <el-option
                   v-for="user in usersAvailable"
                   :key="user.id"
@@ -124,8 +124,23 @@
                   :value="user.id">
               </el-option>
             </el-select>
+            <el-upload
+              class="upload-students"
+              drag
+              action=""
+              multiple
+              :limit=10
+              :accept="'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel'"
+              :auto-upload="false"
+              :on-change="handleUploadStudentChange"
+              :on-remove="handleUploadStudentRemove"
+              :on-exceed="handleUploadStudentExceeded"
+              style="margin-top: 3%;">
+              <i class="el-icon-upload"></i>
+              <div class="el-upload__text">上传<b>网络学堂</b>导出的“<b>学生信息.xls</b>”文件。<br>拖到此处，或<em>点击上传</em></div>
+            </el-upload>
           </el-form-item>
-          <el-form-item label="课程类型" :label-width="'120px'" required>
+          <el-form-item label="课程类型" required>
             <el-select v-model="createCourseForm.type" placeholder="">
               <el-option label="OJ-based" value="OJ"></el-option>
               <el-option label="GitLab-based" value="GitLab"></el-option>
@@ -145,6 +160,7 @@
 
 
 <script>
+import XLSX from 'xlsx'
 // TODO: auth login, user database, course list page, hw list page, question list page, test list page
 
 export default {
@@ -214,7 +230,7 @@ export default {
       },
       usersAvailable: [
         {
-          id: 2018011446,
+          id: 2016012395,
           name: "liuhz",
         },
         {
@@ -227,7 +243,7 @@ export default {
         },
       ],
       dialogFormVisible: false,
-      search: ''
+      search: '',
     }
   },
   computed: {
@@ -251,6 +267,64 @@ export default {
       console.log(row, row.id, row.name, column, event);
       console.log("handleRowClick() jump to /lab");
       this.$router.push({ path: "/lab", query: { tabindex: '1' } });
+    },
+    handleUploadStudentChange(file, fileList) {
+      // 上传多个文件的时候会多次调用此函数
+      console.log("changed", file, fileList)
+      this.readSingleExcelFile(file.raw)
+    },
+    handleUploadStudentExceeded(file, fileList) {
+      console.log(file, fileList)
+      this.$message({
+          message: '文件数量过多',
+          type: 'error'
+        })
+    },
+    handleUploadStudentRemove(file, fileList) {
+      console.log(file, fileList)
+    },
+    readSingleExcelFile(file) {
+      if (!/\.(xls|xlsx)$/.test(file.name.toLowerCase())) {
+        this.$message({
+          message: '文件类型不正确，请上传.xls或.xlsx文件',
+          type: 'error'
+        })
+        return false
+      }
+      // let that = this;
+      const fileReader = new FileReader();
+      fileReader.onload = (ev) => {
+        try {
+          const data = ev.target.result
+          const workbook = XLSX.read(data, {
+            type: 'binary'
+          })
+          const worksheetname = workbook.SheetNames[0]
+          this.resolveExcelContent(XLSX.utils.sheet_to_json(workbook.Sheets[worksheetname]))
+        } catch (e) {
+          this.$message({
+            message: '文件解析失败(' + e + ')，请检查文件内容',
+            type: 'error'
+          })
+        }
+      }
+      fileReader.readAsBinaryString(file)
+      return true
+    },
+    resolveExcelContent(content) {
+      for (var i = 0, len=content.length; i < len; i++) {
+        if (Object.keys(content[i]).indexOf('学号') == -1) {
+          this.$message({
+            message: '文件解析失败，请检查文件内容, 取消并重新上传',
+            type: 'error'
+          })
+          break;
+        }
+        const id = parseInt(content[i]['学号']);
+        if (this.createCourseForm.students.indexOf(id) == -1) {
+          this.createCourseForm.students.push(id)
+        }
+      }
     }
   },
   // mounted 在初始化页面完成后，再对dom节点进行相关操作
@@ -259,6 +333,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 .el-header, .el-footer {
@@ -284,4 +359,3 @@ export default {
 }
 
 </style>
-
