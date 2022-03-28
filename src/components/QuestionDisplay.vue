@@ -2,17 +2,33 @@
     <div id="questionDisplay">
         <el-container>
             <el-header>
-                <el-menu :default-active="activeIndex" class="course-menu" mode="horizontal" @select="handleSelect">
-                    <el-menu-item index="0">
-                        <i class="el-icon-s-home"></i>Home
-                    </el-menu-item>
-                    <el-menu-item index="1">本课程</el-menu-item>
-                    <el-menu-item index="2">评测</el-menu-item>
-                    <el-menu-item index="3">题库</el-menu-item>
-                    <el-menu-item index="4">发布公告</el-menu-item>
-                    <el-menu-item index="5">发布题目</el-menu-item>
-                    <el-menu-item index="6">发布作业</el-menu-item>
-                </el-menu>
+                <el-row>
+                    <el-col :span="19">
+                        <el-menu :default-active="activeIndex" class="course-menu" mode="horizontal" @select="handleSelect">
+                            <el-menu-item index="0">
+                                <i class="el-icon-s-home"></i>Home
+                            </el-menu-item>
+                            <el-menu-item index="1">本课程</el-menu-item>
+                            <el-menu-item index="2">评测</el-menu-item>
+                            <el-menu-item index="3">题库</el-menu-item>
+                            <el-menu-item index="4">发布公告</el-menu-item>
+                            <el-menu-item index="5">发布题目</el-menu-item>
+                            <el-menu-item index="6">发布作业</el-menu-item>
+                        </el-menu>
+                    </el-col>
+                    <el-col :span="3" style="margin-top: 9px;">
+                        <div class="grid-content bg-purple">
+                        <h2 style="font-size: 16px; text-align: right; line-height:1.5; color: #909399;">Hello {{ username }} !</h2>
+                        </div>
+                    </el-col>
+                    <el-col :span="1" :offset="1" style="margin-top: 13px;">
+                        <div class="grid-content bg-purple">
+                        <el-tooltip class="item" effect="dark" content="退出登录" placement="top-start">
+                            <el-button icon="el-icon-switch-button" circle @click="handleLogOut"></el-button>
+                        </el-tooltip>
+                        </div>
+                    </el-col>
+                </el-row>
             </el-header>
             
             <div class="display">
@@ -105,6 +121,7 @@ import 'codemirror/theme/3024-day.css'
 
 import axios from "axios"
 import saveAs from 'file-saver'
+import { mapMutations } from 'vuex'
 
 const questionDesctriptionContent = "##  题目描述 \n\
 \n\
@@ -137,6 +154,7 @@ export default {
     },
     data() {
         return {
+            username: this.$store.state.UserName || 'unknown',
             activeIndex: '1', // '1' for later push
             selectIndex: '1',
             title: "题目 1",
@@ -190,14 +208,18 @@ export default {
         }
     },
     methods: {
+        ...mapMutations([
+            'CHANGE_LOCALSTORAGE_ON_LOGOUT',
+        ]),
         handleSelect(key, keyPath) {
             console.log(key, keyPath);
             this.selectIndex = key.toString();
-            console.log("handleSelect() jump to /lab", this.selectIndex);
             if (this.selectIndex === "0") {
-                this.$router.push({ path: "/course", query: {  } });
+                console.log("handleSelect() jump to /home", this.selectIndex);
+                this.$router.push({ path: "/home", query: {  } });
             } else {
-                this.$router.push({ path: "/lab", query: { tabindex: this.selectIndex } });
+                console.log("handleSelect() jump to /ojlab", this.selectIndex);
+                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex } });
             }
         },
         codeChangeMethod() {
@@ -304,12 +326,16 @@ export default {
         handleCodeFileChange(file, fileList) {
             this.fileList = fileList;
         },
+        handleLogOut() {
+            this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+            this.$router.push("/login")
+        }
     }
 }
 </script>
 
 
-<style scoped>
+<style scoped lang="less">
 .display {
     width: 100%;
 }

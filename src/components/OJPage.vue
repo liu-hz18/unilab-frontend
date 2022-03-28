@@ -3,17 +3,33 @@
 
         <el-container>
             <el-header>
-                <el-menu :default-active="activeIndex" class="course-menu" mode="horizontal" @select="handleSelect">
-                    <el-menu-item index="0">
-                        <i class="el-icon-s-home"></i>Home
-                    </el-menu-item>
-                    <el-menu-item index="1">本课程</el-menu-item>
-                    <el-menu-item index="2">评测</el-menu-item>
-                    <el-menu-item index="3">题库</el-menu-item>
-                    <el-menu-item index="4">发布公告</el-menu-item>
-                    <el-menu-item index="5">发布题目</el-menu-item>
-                    <el-menu-item index="6">发布作业</el-menu-item>
-                </el-menu>
+                <el-row>
+                    <el-col :span="19">
+                        <el-menu :default-active="activeIndex" class="course-menu" mode="horizontal" @select="handleSelect">
+                            <el-menu-item index="0">
+                                <i class="el-icon-s-home"></i>Home
+                            </el-menu-item>
+                            <el-menu-item index="1">本课程</el-menu-item>
+                            <el-menu-item index="2">评测</el-menu-item>
+                            <el-menu-item index="3">题库</el-menu-item>
+                            <el-menu-item index="4">发布公告</el-menu-item>
+                            <el-menu-item index="5">发布题目</el-menu-item>
+                            <el-menu-item index="6">发布作业</el-menu-item>
+                        </el-menu>
+                    </el-col>
+                    <el-col :span="3" style="margin-top: 9px;">
+                        <div class="grid-content bg-purple">
+                        <h2 style="font-size: 16px; text-align: right; line-height:1.5; color: #909399;">Hello {{ username }} !</h2>
+                        </div>
+                    </el-col>
+                    <el-col :span="1" :offset="1" style="margin-top: 13px;">
+                        <div class="grid-content bg-purple">
+                        <el-tooltip class="item" effect="dark" content="退出登录" placement="top-start">
+                            <el-button icon="el-icon-switch-button" circle @click="handleLogOut"></el-button>
+                        </el-tooltip>
+                        </div>
+                    </el-col>
+                </el-row>
             </el-header>
 
             <!-- course homepage -->
@@ -361,6 +377,7 @@
 </template>
 
 <script>
+import { mapMutations } from 'vuex'
 import MarkDownEditor from "./MarkDownEditor.vue"
 const questionDesctriptionContent = "##  题目描述 \n\
 \n\
@@ -382,12 +399,13 @@ const questionDesctriptionContent = "##  题目描述 \n\
 ";
 
 export default {
-    name: "UniLabCoursePage",
+    name: "UniLabOJPage",
     components: {
         MarkDownEditor,
     },
     data() {
         return {
+            username: this.$store.state.UserName || 'unknown',
             activeIndex: this.$route.query.tabindex == null ? '1' : this.$route.query.tabindex, // '1' for later push
             selectIndex: this.$route.query.tabindex == null ? '1' : this.$route.query.tabindex,
             activeNames: [0],
@@ -776,6 +794,9 @@ export default {
         },
     },
     methods: {  
+        ...mapMutations([
+            'CHANGE_LOCALSTORAGE_ON_LOGOUT',
+        ]),
         handleChange(val) {
             console.log(val);
         },
@@ -783,9 +804,9 @@ export default {
             console.log(key, keyPath);
             this.selectIndex = key.toString();
             if (this.selectIndex === "0") {
-                this.$router.push({ path: "/course", query: {  } });
+                this.$router.push({ path: "/home", query: {  } });
             } else {
-                this.$router.push({ path: "/lab", query: { tabindex: this.selectIndex } });
+                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex } });
             }
             // WARN: bind a key to force update table to avoid rendering failure
             this.updateKey = !this.updateKey;
@@ -805,6 +826,10 @@ export default {
         handleAnnouncementClick(index, announcement) {
             console.log(index, announcement);
             this.$router.push({ path: "/announcement" });
+        },
+        handleLogOut() {
+            this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+            this.$router.push("/login")
         }
     },
     created() {

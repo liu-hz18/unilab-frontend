@@ -3,8 +3,8 @@ import VueRouter from 'vue-router'
 
 import UniLabLogin from "../components/Login.vue"
 import UniLabEditor from "../components/Editor.vue"
-import UniLabCourse from "../components/CourseList.vue"
-import UniLabCoursePage from "../components/CoursePage.vue"
+import UniLabHome from "../components/Home.vue"
+import UniLabOJPage from "../components/OJPage.vue"
 import UniLabAnnouncementDisplay from "../components/AnnouncementDisplay.vue"
 import UniLabQuestionDisplay from "../components/QuestionDisplay.vue"
 // import UniLab from "../App.vue"
@@ -16,7 +16,7 @@ const router = new VueRouter({
     routes: [
         {
             path: '/',
-            redirect: '/course'
+            redirect: '/home'
         },
         {
             path: '/login',
@@ -25,17 +25,13 @@ const router = new VueRouter({
         },
         {
             path: '/home',
-            redirect: '/course'
+            name: 'home',
+            component: UniLabHome
         },
         {
-            path: '/course',
-            name: "Course",
-            component: UniLabCourse
-        },
-        {
-            path: "/lab",
-            name: "CoursePage",
-            component: UniLabCoursePage
+            path: "/ojlab",
+            name: "ojlab",
+            component: UniLabOJPage
         },
         {
             path: '/editor',

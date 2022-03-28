@@ -26,7 +26,9 @@ export default {
         };
     },
     methods: {
-        ...mapMutations(['changeLogin']),
+        ...mapMutations([
+            'CHANGE_LOCALSTORAGE_ON_LOGIN',
+        ]),
         login () {
             let _this = this;
             if (this.loginForm.username === '' || this.loginForm.password === '') {
@@ -40,11 +42,15 @@ export default {
                     url: 'http://localhost:1323/login',
                     data: formData
                 }).then(res => {
-                    console.log(res);
+                    console.log(res, res.data.data);
                     if (res.data.code == 200) {
+                        // bearer: 持票人
                         _this.userToken = 'Bearer ' + res.data.data.token;
                         // 将用户token保存到vuex中
-                        _this.changeLogin({ Authorization: _this.userToken });
+                        _this.CHANGE_LOCALSTORAGE_ON_LOGIN({
+                            Authorization: _this.userToken,
+                            UserName: res.data.data.username,
+                        });
                         _this.$router.push('/home');
                         alert('登陆成功');
                     } else {

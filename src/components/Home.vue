@@ -4,16 +4,30 @@
     <el-container>
       <el-header>
         <el-row :gutter="20" style="background-color: #BBD9F8;">
-          <el-col :span="8"><h1 style="font-size: 20px; text-align: left; margin-left: 5px; line-height:1.7;">UniLab Platform</h1></el-col>
-          <el-col :span="12"></el-col>
-          <!-- TODO: for user login -->
-          <el-col :span="4"><div class="grid-content bg-purple"></div></el-col>
+          <el-col :span="8">
+            <div class="grid-content bg-purple">
+              <h1 style="font-size: 20px; text-align: left; margin-left: 5px; line-height:1.7;">UniLab Platform</h1> 
+            </div>
+          </el-col>
+          <!-- <el-col :span="10"><div class="grid-content bg-purple"></div></el-col> -->
+          <!-- TODO: for user logout -->
+          <el-col :span="3" :offset="11" style="margin-top: 9px;">
+            <div class="grid-content bg-purple">
+              <h2 style="font-size: 16px; text-align: right; line-height:1.5; color: #909399;">Hello {{ username }} !</h2>
+            </div>
+          </el-col>
+          <el-col :span="2" style="margin-top: 13px;">
+            <div class="grid-content bg-purple">
+              <el-tooltip class="item" effect="dark" content="退出登录" placement="top-start">
+                <el-button icon="el-icon-switch-button" circle @click="handleLogOut"></el-button>
+              </el-tooltip>
+            </div>
+          </el-col>
         </el-row>
       </el-header>
 
       <el-container>
         <el-main>
-          
           <el-row>
             <el-col :span="21">
               <el-input
@@ -160,16 +174,18 @@
 
 
 <script>
+import { mapMutations } from 'vuex';
 import XLSX from 'xlsx'
 // TODO: auth login, user database, course list page, hw list page, question list page, test list page
 
 export default {
-  name: 'UniLabCourse',
+  name: 'UniLabHome',
   components: {
     
   },
   data() {
     return {
+      username: this.$store.state.UserName || 'unknown',
       courseList: [{
         id: 0,
         name: '程序设计基础',
@@ -256,6 +272,9 @@ export default {
     }
   },
   methods: {
+    ...mapMutations([
+        'CHANGE_LOCALSTORAGE_ON_LOGOUT',
+    ]),
     handleEdit(index, row) {
       console.log(index, row);
     },
@@ -265,8 +284,8 @@ export default {
     },
     handleRowClick(row, column, event) {
       console.log(row, row.id, row.name, column, event);
-      console.log("handleRowClick() jump to /lab");
-      this.$router.push({ path: "/lab", query: { tabindex: '1' } });
+      console.log("handleRowClick() jump to /ojlab");
+      this.$router.push({ path: "/ojlab", query: { tabindex: '1' } });
     },
     handleUploadStudentChange(file, fileList) {
       // 上传多个文件的时候会多次调用此函数
@@ -325,6 +344,10 @@ export default {
           this.createCourseForm.students.push(id)
         }
       }
+    },
+    handleLogOut() {
+      this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+      this.$router.push("/login")
     }
   },
   // mounted 在初始化页面完成后，再对dom节点进行相关操作
