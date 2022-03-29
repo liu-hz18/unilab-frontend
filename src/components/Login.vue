@@ -10,6 +10,7 @@
 <script>
 import { mapMutations } from 'vuex';
 import axios from "axios"
+import { Message } from "element-ui"
 
 export default {
     name: 'UniLabLogin',
@@ -32,14 +33,14 @@ export default {
         login () {
             let _this = this;
             if (this.loginForm.username === '' || this.loginForm.password === '') {
-                alert('账号或密码不能为空');
+                Message.warning('账号或密码不能为空');
             } else {
                 const formData = new FormData(); // 用form提交
                 formData.append('userid', _this.loginForm.userid);
                 formData.append('password', _this.loginForm.password);
                 axios({
                     method: 'post',
-                    url: 'http://localhost:1323/login',
+                    url: 'login',
                     data: formData
                 }).then(res => {
                     console.log(res, res.data.data);
@@ -50,14 +51,16 @@ export default {
                         _this.CHANGE_LOCALSTORAGE_ON_LOGIN({
                             Authorization: _this.userToken,
                             UserName: res.data.data.username,
+                            Permission: res.data.data.permission,
+                            UserID: _this.loginForm.userid,
                         });
                         _this.$router.push('/home');
-                        alert('登陆成功');
+                        Message.success('登陆成功', _this.loginForm.userid);
                     } else {
-                        alert('账号或密码错误');
+                        Message.error('账号或密码错误');
                     }
                 }).catch(error => {
-                    alert('账号或密码错误');
+                    Message.error('账号或密码错误');
                     console.log(error);
                 });
             }

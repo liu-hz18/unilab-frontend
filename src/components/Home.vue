@@ -9,8 +9,7 @@
               <h1 style="font-size: 20px; text-align: left; margin-left: 5px; line-height:1.7;">UniLab Platform</h1> 
             </div>
           </el-col>
-          <!-- <el-col :span="10"><div class="grid-content bg-purple"></div></el-col> -->
-          <!-- TODO: for user logout -->
+          <!-- user logout -->
           <el-col :span="3" :offset="11" style="margin-top: 9px;">
             <div class="grid-content bg-purple">
               <h2 style="font-size: 16px; text-align: right; line-height:1.5; color: #909399;">Hello {{ username }} !</h2>
@@ -112,15 +111,25 @@
       </el-container>
 
       <el-dialog title="新建课程" :visible.sync="dialogFormVisible">
-        <el-form :model="createCourseForm" label-width="140px">
-          <el-form-item label="课程名称" required>
+        <el-form :model="createCourseForm" :rules="createCourseFormRules" ref="createCourseForm" label-width="140px" >
+          <el-form-item label="课程名称" required prop="name">
             <el-input v-model="createCourseForm.name" autocomplete="off"></el-input>
           </el-form-item>
-          <el-form-item label="教师" required>
-            <el-input v-model="createCourseForm.teachername" autocomplete="off"></el-input>
+          <el-form-item label="创建者姓名" required prop="creator">
+            <el-input v-model="createCourseForm.creator" autocomplete="off"></el-input>
           </el-form-item>
-          <el-form-item label="请选择教学人员" required>
-            <el-select v-model="createCourseForm.teachers" placeholder="可多选" multiple filterable clearable style="width: 90%;">
+          <el-form-item label="请选择学期" required prop="term">
+            <el-select v-model="createCourseForm.term" filterable style="width: 90%;">
+              <el-option
+                  v-for="term in termAvailable"
+                  :key="term"
+                  :label="term"
+                  :value="term">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="请选择教学人员" required prop="teachers">
+            <el-select v-model="createCourseForm.teachers" placeholder="可多选" multiple filterable reserve-keyword clearable :loading="fetchingUsers" :loading-text="'Loading...'" @visible-change="selectorChange" style="width: 90%;">
               <el-option
                   v-for="user in usersAvailable"
                   :key="user.id"
@@ -129,8 +138,8 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="请选择或导入学生" required>
-            <el-select v-model="createCourseForm.students" placeholder="可多选" multiple filterable collapse-tags clearable style="width: 90%;">
+          <el-form-item label="请选择或导入学生" required prop="students">
+            <el-select v-model="createCourseForm.students" placeholder="可多选" multiple filterable reserve-keyword collapse-tags clearable :loading="fetchingUsers" :loading-text="'Loading...'" @visible-change="selectorChange" style="width: 90%;">
               <el-option
                   v-for="user in usersAvailable"
                   :key="user.id"
@@ -154,7 +163,7 @@
               <div class="el-upload__text">上传<b>网络学堂</b>导出的“<b>学生信息.xls</b>”文件。<br>拖到此处，或<em>点击上传</em></div>
             </el-upload>
           </el-form-item>
-          <el-form-item label="课程类型" required>
+          <el-form-item label="课程类型" required prop="type">
             <el-select v-model="createCourseForm.type" placeholder="">
               <el-option label="OJ-based" value="OJ"></el-option>
               <el-option label="GitLab-based" value="GitLab"></el-option>
@@ -164,7 +173,7 @@
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+          <el-button type="primary" @click="commitCreateCourseForm('createCourseForm')">确 定</el-button>
         </div>
       </el-dialog>
       
@@ -176,6 +185,8 @@
 <script>
 import { mapMutations } from 'vuex';
 import XLSX from 'xlsx'
+import axios from "axios"
+import { Message } from "element-ui"
 // TODO: auth login, user database, course list page, hw list page, question list page, test list page
 
 export default {
@@ -185,44 +196,9 @@ export default {
   },
   data() {
     return {
-      username: this.$store.state.UserName || 'unknown',
-      courseList: [{
-        id: 0,
-        name: '程序设计基础',
-        teacher: 'Alice',
-        announcements: 3,
-        todoAssignments: 4,
-        type: "OJ",
-        nearestDue: "2022/03/15 24:00",
-        time: "2019-2020春季学期"
-      }, {
-        id: 1,
-        name: '面向对象程序设计基础',
-        teacher: 'Bob',
-        announcements: 3,
-        todoAssignments: 4,
-        type: "OJ",
-        nearestDue: "2022/03/15 24:00",
-        time: "2019-2020春季学期"
-      }, {
-        id: 2,
-        name: 'JAVA程序设计基础',
-        teacher: 'CCC',
-        announcements: 3,
-        todoAssignments: 4,
-        type: "OJ",
-        nearestDue: "2022/03/15 24:00",
-        time: "2019-2020春季学期"
-      }, {
-        id: 3,
-        name: 'Python程序设计基础',
-        teacher: 'DDD',
-        announcements: 3,
-        todoAssignments: 4,
-        type: "OJ",
-        nearestDue: "2022/03/15 24:00",
-        time: "2019-2020春季学期"
-      }],
+      username: (this.$store.state.UserName || 'unknown'),
+      fetchingUsers: true,
+      courseList: [],
       activities: [
         {
           timestamp: "2022/3/22 13:48",
@@ -237,26 +213,40 @@ export default {
           content: "登入",
         },
       ],
+      createCourseFormRules: {
+        name: [
+          { required: true, message: "请输入课程名称", trigger: 'blur' },
+          { min: 1, max: 30, message: '长度在1到30个字符', trigger: 'blur' },
+        ],
+        type: [
+          { required: true, message: "请选择课程类型", trigger: 'blur'},
+        ],
+        creator: [
+          { required: true, message: "请输入创建者姓名", trigger: 'blur'},
+        ],
+        term: [
+          { required: true, message: "请选择学期", trigger: 'change' },
+        ],
+        teachers: [
+          { required: true, type: 'array', message: "请选择教学人员", trigger: 'change'}, 
+        ],
+        students: [
+          {required: true, type: 'array', message: "请选择学生", trigger: 'change' }
+        ]
+      },
       createCourseForm: {
         name: "",
         type: "",
-        teachername: "",
+        creator: "",
+        term: "",
         teachers: [],
         students: [],
       },
-      usersAvailable: [
-        {
-          id: 2016012395,
-          name: "liuhz",
-        },
-        {
-          id: 2018011447,
-          name: "liuhy",
-        },
-        {
-          id: 2018011448,
-          name: "liuhx",
-        },
+      usersAvailable: [],
+      termAvailable: [
+        "2021-2022 春季学期",
+        "2022-2023 秋季学期",
+        "2022-2023 春季学期"
       ],
       dialogFormVisible: false,
       search: '',
@@ -345,10 +335,102 @@ export default {
         }
       }
     },
+    commitCreateCourseForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.dialogFormVisible = false;
+          // 发送数据给后端, json格式
+          axios({
+            method: 'post',
+            url: "teacher/create-course",
+            header:{
+              'Content-Type':'application/json',  //如果写成contentType会报错
+            },
+            data: this.createCourseForm
+          }).then( res => {
+            console.log(res.data)
+            if (res.status === 200 && res.data.code === 200) {
+              Message.success("课程创建成功")
+              this.fetchUserCourses()
+            } else {
+              Message.error("课程创建失败")
+            }
+          }).catch( err => {
+            Message.error("课程创建失败")
+            console.log(err)
+          })
+        } else {
+          Message.warning("请按要求填写表单")
+          return false;
+        }
+      });
+    },
     handleLogOut() {
       this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+      Message.success("退出登录", localStorage.getItem("UserID"))
       this.$router.push("/login")
+    },
+    selectorChange(open) {
+      console.log("selectorChange")
+      if (open && this.fetchingUsers) {
+        console.log("open and fetching")
+        // 发送数据给后端, json格式
+        axios({
+          method: 'get',
+          url: "teacher/fetch-all-user",
+        }).then( res => {
+          console.log(res.data)
+          res.data.data.result.forEach(user => {
+            this.usersAvailable.push({
+              id: user.id,
+              name: user.name
+            })
+          })
+          this.fetchingUsers = false;
+        }).catch( err => {
+          console.log(err)
+          Message.error("获取用户列表失败")
+        })
+      }
+    },
+    fetchUserCourses() {
+      console.log("fetchUserCourses")
+      console.log(axios.defaults.baseURL)
+      axios({
+        method: 'get',
+        url: "http://localhost:1323/student/fetch-my-course",
+        params: {
+          id: localStorage.getItem("UserID"),
+        },
+        headers: {
+          'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+        }
+      }).then( res => {
+        console.log(res.data)
+        this.courseList = []
+        if (res.data.data.result) {
+          res.data.data.result.forEach(course => {
+            this.courseList.push({
+              id: course.CourseID,
+              name: course.CourseName,
+              teacher: course.CourseTeacher,
+              announcements: 0,
+              todoAssignments: 4,
+              type: course.CourseType,
+              nearestDue: "123",
+              time: course.CourseTerm,
+            })
+          })
+        }
+      }).catch( err => {
+        Message.error("获取课程列表失败")
+        console.log(err)
+      })
     }
+  },
+  created() { // before main.js init
+    this.fetchUserCourses()
+    this.createCourseForm.teachers.push(parseInt(localStorage.getItem("UserID")))
   },
   // mounted 在初始化页面完成后，再对dom节点进行相关操作
   mounted() {
