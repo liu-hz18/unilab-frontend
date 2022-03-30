@@ -37,6 +37,7 @@
                         <h1 style="font-size: 25px; text-align: center; line-height:1.7;">{{ title }}</h1>
                     </el-header>
                     <el-main>
+                        <h4 style="font-size: 14px; text-align: center; line-height:1.0; color=#909399;">发布时间: {{ issueTime }}</h4>
                         <MarkdownPreview v-bind:initialValue="content" theme="oneDark"/>
                     </el-main>
                 </el-container>
@@ -50,25 +51,26 @@
 <script>
 import { MarkdownPreview } from 'vue-meditor'
 import { mapMutations } from 'vuex'
-
-const questionDesctriptionContent = "##  题目描述 \n\
-\n\
-##  输入样例 \n\
-\n\
-``` \n\
-\n\
-``` \n\
-##  输出样例 \n\
-\n\
-``` \n\
-\n\
-``` \n\
-##  数据范围与约定 \n\
-\n\
-##  提示 \n\
-\n\
-##  评分标准 \n\
-";
+import { Message } from "element-ui"
+import axios from "axios"
+// const questionDesctriptionContent = "##  题目描述 \n\
+// \n\
+// ##  输入样例 \n\
+// \n\
+// ``` \n\
+// \n\
+// ``` \n\
+// ##  输出样例 \n\
+// \n\
+// ``` \n\
+// \n\
+// ``` \n\
+// ##  数据范围与约定 \n\
+// \n\
+// ##  提示 \n\
+// \n\
+// ##  评分标准 \n\
+// ";
 
 export default {
     name: 'UniLabAnnouncementDisplay',
@@ -80,8 +82,11 @@ export default {
             username: this.$store.state.UserName || 'unknown',
             activeIndex: '1', // '1' for later push
             selectIndex: '1',
+            courseid: this.initCourseID(),
+            annoid: this.initAnnouncementID(),
+            issueTime: "",
             title: "公告 1",
-            content: questionDesctriptionContent
+            content: ""
         }
     },
     computed: {
@@ -95,17 +100,106 @@ export default {
             console.log(key, keyPath);
             this.selectIndex = key.toString();
             if (this.selectIndex === "0") {
-                console.log("handleSelect() jump to /home");
                 this.$router.push({ path: "/home", query: {  } });
-            } else {
-                console.log("handleSelect() jump to /ojlab");
-                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex } });
+            } else if (this.selectIndex === "1") {
+                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
+            } else  {
+                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
             }
         },
         handleLogOut() {
             this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
             this.$router.push("/login")
+        },
+        isNumber(val){
+            var regPos = /^[0-9]+.?[0-9]*/; //判断是否是数字。
+            if(regPos.test(val) ){
+                return true;
+            }else{
+                return false;
+            }
+        },
+        initCourseID() {
+            if (this.$route.query.courseid === null || this.isNumber(this.$route.query.courseid) === false) {
+                this.$router.replace({path: "/404"})
+                return 0;
+            } else {
+                this.courseid = this.$route.query.courseid
+                axios({
+                    method: 'get',
+                    url: "http://localhost:1323/student/fetch-course-name",
+                    params: {
+                        courseid: this.courseid,
+                    },
+                    headers: {
+                        'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                    }
+                }).then(res => {
+                    console.log(res.data)
+                    if (res.status === 200 && res.data.code === 200) {
+                        this.courseName = res.data.data.result
+                        Message.success("获取课程信息成功")
+                    } else {
+                        this.$router.replace("/404")
+                        Message.error("获取课程信息失败")
+                    }
+                }).catch(err => {
+                    if (err.response.status === 401) {
+                        this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                        Message.error("UNAUTHORIZED: 请重新登录")
+                        this.$router.replace("/login")
+                    } else {
+                        Message.error("获取课程列表失败")
+                        console.log(err)
+                        this.$router.replace("/404")
+                    }
+                })
+                return this.$route.query.courseid
+            }
+        },
+        initAnnouncementID() {
+            if (this.$route.query.annoid === null || this.isNumber(this.$route.query.annoid) === false) {
+                this.$router.replace({path: "/404"})
+                return 0;
+            } else {
+                this.annoid = this.$route.query.annoid
+                axios({
+                    method: 'get',
+                    url: "http://localhost:1323/student/fetch-annocement",
+                    params: {
+                        annoid: this.annoid,
+                    },
+                    headers: {
+                        'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                    }
+                }).then(res => {
+                    console.log(res.data)
+                    if (res.status === 200 && res.data.code === 200) {
+                        this.title = res.data.data.result.Title
+                        this.issueTime = res.data.data.result.IssueTime;
+                        this.content = res.data.data.result.Content;
+                        Message.success("获取公告信息成功")
+                    } else {
+                        this.$router.replace("/404")
+                        Message.error("获取公告信息失败")
+                    }
+                }).catch(err => {
+                    if (err.response.status === 401) {
+                        this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                        Message.error("UNAUTHORIZED: 请重新登录")
+                        this.$router.replace("/login")
+                    } else {
+                        Message.error("获取公告列表失败")
+                        console.log(err)
+                        this.$router.replace("/404")
+                    }
+                })
+                return this.$route.query.annoid
+            }
         }
+    },
+    created() {
+
     }
 }
 </script>

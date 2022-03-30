@@ -165,9 +165,9 @@
           </el-form-item>
           <el-form-item label="课程类型" required prop="type">
             <el-select v-model="createCourseForm.type" placeholder="">
-              <el-option label="OJ-based" value="OJ"></el-option>
-              <el-option label="GitLab-based" value="GitLab"></el-option>
-              <el-option label="System" value="System"></el-option>
+              <el-option :label="'OJ-based'" :value="1" :key="1"></el-option>
+              <el-option :label="'GitLab-based'" :value="2" :key="2"></el-option>
+              <el-option :label="'System'" :value="3" :key="3"></el-option>
             </el-select>
           </el-form-item>
         </el-form>
@@ -236,7 +236,7 @@ export default {
       },
       createCourseForm: {
         name: "",
-        type: "",
+        type: 1,
         creator: "",
         term: "",
         teachers: [],
@@ -275,7 +275,7 @@ export default {
     handleRowClick(row, column, event) {
       console.log(row, row.id, row.name, column, event);
       console.log("handleRowClick() jump to /ojlab");
-      this.$router.push({ path: "/ojlab", query: { tabindex: '1' } });
+      this.$router.push({ path: "/ojlab", query: { tabindex: '1', courseid: row.id } });
     },
     handleUploadStudentChange(file, fileList) {
       // 上传多个文件的时候会多次调用此函数
@@ -422,9 +422,15 @@ export default {
             })
           })
         }
-      }).catch( err => {
-        Message.error("获取课程列表失败")
-        console.log(err)
+      }).catch(err => {
+        if (err.response.status === 401) {
+          this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+          Message.error("UNAUTHORIZED: 请重新登录")
+          this.$router.replace("/login")
+        } else {
+          Message.error("获取课程列表失败")
+          console.log(err)
+        }
       })
     }
   },

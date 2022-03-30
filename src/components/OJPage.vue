@@ -246,15 +246,15 @@
             <!-- announcements edit and push -->
             <el-container v-else-if="selectIndex=='4'" style="width: 80%;">
                 <el-main>
-                    <el-form ref="form" :model="announcementForm" label-width="80px">
+                    <el-form ref="announcementForm" :model="announcementForm" :rules="announcementFormRules" label-width="80px">
                         <el-form-item label="Title" required>
-                            <el-input v-model="announcementForm.title"></el-input>
+                            <el-input v-model="announcementForm.title" prop="title"></el-input>
                         </el-form-item>
                         <el-form-item label="Content">
                             <MarkDownEditor v-model="announcementForm.markdownContent" @markdown-input="announcementDesctriptionChanged"/>
                         </el-form-item>
                         <el-form-item>
-                            <el-button type="primary" @click="onSubmit">发布公告</el-button>
+                            <el-button type="primary" @click="onAnnouncementSubmit('announcementForm')">发布公告</el-button>
                         </el-form-item>
                     </el-form>
                 </el-main>
@@ -379,6 +379,8 @@
 <script>
 import { mapMutations } from 'vuex'
 import MarkDownEditor from "./MarkDownEditor.vue"
+import { Message } from "element-ui"
+import axios from "axios"
 const questionDesctriptionContent = "##  题目描述 \n\
 \n\
 ##  输入样例 \n\
@@ -406,26 +408,15 @@ export default {
     data() {
         return {
             username: this.$store.state.UserName || 'unknown',
+            courseid: this.initCourseID(),
+            courseName: "",
             activeIndex: this.$route.query.tabindex == null ? '1' : this.$route.query.tabindex, // '1' for later push
             selectIndex: this.$route.query.tabindex == null ? '1' : this.$route.query.tabindex,
             activeNames: [0],
             searchTest: '',
             searchQuestion: '',
             updateKey: false,
-            announcementList: [
-                {
-                    announcementId: 1,
-                    title: "公告 1",
-                },
-                {
-                    announcementId: 2,
-                    title: "公告 2",
-                },
-                {
-                    announcementId: 3,
-                    title: "公告 3",
-                },
-            ],
+            announcementList: [],
             assignmentsInfo: [
                 {
                     assignmentId: 1,
@@ -774,7 +765,15 @@ export default {
                     name: "test 3",
                     tag: "C++", 
                 }
-            ]
+            ],
+
+            // form validator
+            announcementFormRules: {
+                title: [
+                    { required: true, message: "请输入公告名称", trigger: 'blur'},
+                    { min: 1, max: 30, message: "长度在1到30个字符", trigger: 'blur' },
+                ],
+            }
         }
     },
     computed: {
@@ -805,8 +804,11 @@ export default {
             this.selectIndex = key.toString();
             if (this.selectIndex === "0") {
                 this.$router.push({ path: "/home", query: {  } });
-            } else {
-                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex } });
+            } else if (this.selectIndex === "1") {
+                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
+                this.fetchAnnouncements()
+            } else  {
+                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
             }
             // WARN: bind a key to force update table to avoid rendering failure
             this.updateKey = !this.updateKey;
@@ -825,14 +827,130 @@ export default {
         },
         handleAnnouncementClick(index, announcement) {
             console.log(index, announcement);
-            this.$router.push({ path: "/announcement" });
+            this.$router.push({ path: "/announcement", query: { courseid: this.courseid, annoid: this.announcementList[index].announcementId } });
         },
         handleLogOut() {
             this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
             this.$router.push("/login")
+        },
+        onAnnouncementSubmit(formName) {
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    console.log("onAnnouncementSubmit markdown submit", this.markdownContent);
+                    let str = new Blob([this.announcementForm.markdownContent], {
+                        type: 'text/plain; charset=utf-8'
+                    })
+                    let file = new File([str], "announcement.md", {
+                        type: 'text/plain',
+                    });
+                    const formData = new FormData();
+                    formData.append('title', this.announcementForm.title);
+                    formData.append('userid', localStorage.getItem("UserID") ? localStorage.getItem("UserID") : "");
+                    formData.append('courseid', this.courseid)
+                    formData.append('file', file);
+                    axios({
+                        method: "post",
+                        url: "/teacher/create-announcement",
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                        data: formData,
+                    }).then(res => {
+                        console.log(res.data)
+                        if (res.status === 200 && res.data.code === 200) {
+                            Message.success("公告发布成功")
+                        } else {
+                            Message.error("公告发布失败")
+                        }
+                    }).catch(err => {
+                        Message.error("公告发布失败")
+                        console.log(err)
+                    })
+                } else {
+                    Message.warning("请按要求填写表单")
+                    return false;
+                }
+            })
+        },
+        fetchAnnouncements() {
+            console.log("fetchAnnouncements")
+            axios({
+                method: 'get',
+                url: "http://localhost:1323/student/fetch-announcement",
+                params: {
+                    courseid: this.courseid,
+                },
+                headers: {
+                    'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                }
+            }).then(res => {
+                console.log(res.data)
+                this.announcementList = []
+                if (res.data.data.result) {
+                    res.data.data.result.forEach(announcement => {
+                        this.announcementList.push({
+                            announcementId: announcement.ID,
+                            title: announcement.Title,
+                            issue_time: announcement.IssueTime,
+                        })
+                    })
+                }
+            }).catch(err => {
+                Message.error("获取公告列表失败")
+                console.log(err)
+            })
+        },
+        isNumber(val){
+            var regPos = /^[0-9]+.?[0-9]*/; //判断是否是数字。
+            if(regPos.test(val) ){
+                return true;
+            }else{
+                return false;
+            }
+        },
+        initCourseID() {
+            if (this.$route.query.courseid === null || this.isNumber(this.$route.query.courseid) === false) {
+                this.$router.replace({path: "/404"})
+                return 0;
+            } else {
+                this.courseid = this.$route.query.courseid
+                axios({
+                    method: 'get',
+                    url: "http://localhost:1323/student/fetch-course-name",
+                    params: {
+                        courseid: this.courseid,
+                    },
+                    headers: {
+                        'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                    }
+                }).then(res => {
+                    console.log(res.data)
+                    if (res.status === 200 && res.data.code === 200) {
+                        this.courseName = res.data.data.result
+                        Message.success("获取课程信息成功")
+                    } else {
+                        this.$router.replace("/404")
+                        Message.error("获取课程信息失败")
+                    }
+                }).catch(err => {
+                    if (err.response.status === 401) {
+                        this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                        Message.error("UNAUTHORIZED: 请重新登录")
+                        this.$router.replace("/login")
+                    } else {
+                        Message.error("获取课程列表失败")
+                        console.log(err)
+                        this.$router.replace("/404")
+                    }
+                })
+                return this.$route.query.courseid
+            }
         }
     },
     created() {
+        this.fetchAnnouncements()
+    },
+    mounted() {        //写在mounted或者activated生命周期内即可
     }
 }
 </script>
