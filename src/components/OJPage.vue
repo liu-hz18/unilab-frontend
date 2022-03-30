@@ -263,32 +263,32 @@
             <!-- question edit and push  -->
             <el-container v-else-if="selectIndex=='5'">
                 <el-main>
-                    <el-form ref="form" :model="questionForm" label-width="120px">
-                        <el-form-item label="Title" required>
+                    <el-form :model="questionForm" ref="questionForm" :rules="questionFormRules" label-width="120px">
+                        <el-form-item label="Title" required prop="title">
                             <el-input v-model="questionForm.title"></el-input>
                         </el-form-item>
-                        <el-form-item label="Tag" style="width: 400px;">
+                        <el-form-item label="Tag" style="width: 400px;" prop="tag">
                             <el-input v-model="questionForm.tag"></el-input>
                         </el-form-item>
-                        <el-form-item label="Time Limit" style="width: 400px;" required>
-                                <el-col :span="16">
-                                    <el-input-number v-model="questionForm.timeLimit" :min="1"></el-input-number>
-                                </el-col>
-                                <el-col :span="5">&nbsp;ms</el-col>
+                        <el-form-item label="Time Limit" style="width: 400px;" required prop="timeLimit">
+                            <el-col :span="16">
+                                <el-input-number v-model="questionForm.timeLimit" :min="1"></el-input-number>
+                            </el-col>
+                            <el-col :span="5">&nbsp;ms</el-col>
                         </el-form-item>
-                        <el-form-item label="Memory Limit" style="width: 400px;" required>
+                        <el-form-item label="Memory Limit" style="width: 400px;" required prop="memoryLimit">
                             <el-col :span="16">
                                 <el-input-number v-model="questionForm.memoryLimit" :min="1"></el-input-number>
                             </el-col>
                             <el-col :span="5">&nbsp;MB</el-col>
                         </el-form-item>
-                        <el-form-item label="Total Score" style="width: 550px;" required>
+                        <el-form-item label="Total Score" style="width: 550px;" required prop="totalScore">
                             <el-col :span="10">
                                 <el-input-number v-model="questionForm.totalScore" :min="0"></el-input-number>
                             </el-col>
                             <el-col :span="14">&nbsp;points (所有测试点均分total score)</el-col>
                         </el-form-item>
-                        <el-form-item label="Language" style="width: 400px;" required>
+                        <el-form-item label="Language" style="width: 400px;" required prop="languageSelected">
                             <el-select v-model="questionForm.languageSelected" placeholder="C++">
                                 <el-option
                                     v-for="item in languageOptions"
@@ -301,16 +301,17 @@
                         <el-form-item label="Description" required>
                             <MarkDownEditor v-model="questionForm.markdownContent" @markdown-input="questionDesctriptionChanged"/>
                         </el-form-item>
-                        <el-form-item label="Additional Files" required>
+                        <el-form-item label="Additional Files">
                             <el-upload
-                                class="upload-testcase"
+                                class="upload-appendix"
                                 action="https://jsonplaceholder.typicode.com/posts/"
-                                :on-preview="handlePreview"
-                                :on-remove="handleRemove"
-                                :before-remove="beforeRemove"
                                 :limit="1"
+                                accept=".zip,.rar"
+                                :on-change="handleAppendixChange"
+                                :on-remove="handleAppendixRemove"
                                 :on-exceed="handleExceed"
-                                :file-list="fileList">
+                                :file-list="questionForm.appendixFiles"
+                                :auto-upload="false">
                                 <el-button size="small" type="primary">点击上传</el-button>
                                 <div slot="tip" class="el-upload__tip">学生完成题目所必需的附件。多文件请以单个zip压缩包上传，文件大小不超过10MB。</div>
                             </el-upload>
@@ -319,18 +320,19 @@
                             <el-upload
                                 class="upload-testcase"
                                 action="https://jsonplaceholder.typicode.com/posts/"
-                                :on-preview="handlePreview"
-                                :on-remove="handleRemove"
-                                :before-remove="beforeRemove"
                                 :limit="1"
+                                accept=".zip,.rar"
+                                :on-change="handleTestCaseChange"
+                                :on-remove="handleTestCaseRemove"
                                 :on-exceed="handleExceed"
-                                :file-list="fileList">
+                                :file-list="questionForm.testcaseFiles"
+                                :auto-upload="false">
                                 <el-button size="small" type="primary">点击上传</el-button>
                                 <div slot="tip" class="el-upload__tip">只能上传zip文件, 且不超过10MB。</div>
                             </el-upload>
                         </el-form-item>
                         <el-form-item>
-                            <el-button type="primary" @click="onSubmit">发布题目</el-button>
+                            <el-button type="primary" @click="onQuestionSubmit('questionForm')">发布题目</el-button>
                         </el-form-item>
                     </el-form>
                 </el-main>
@@ -653,44 +655,7 @@ export default {
                     ]
                 }
             ],
-            questionList: [
-                {
-                    questionId: 1,
-                    questionName: "questions 1",
-                    tag: "C++, Array",
-                    score: 100,
-                    totalScore: 100,
-                    passSubmission: 10,
-                    totalSubmission: 100,
-                },
-                {
-                    questionId: 1,
-                    questionName: "questions 1",
-                    tag: "C++, Array",
-                    score: 100,
-                    totalScore: 100,
-                    passSubmission: 10,
-                    totalSubmission: 100,
-                },
-                {
-                    questionId: 1,
-                    questionName: "questions 1",
-                    tag: "C++, Array",
-                    score: 100,
-                    totalScore: 100,
-                    passSubmission: 10,
-                    totalSubmission: 100,
-                },
-                {
-                    questionId: 1,
-                    questionName: "questions 1",
-                    tag: "C++, Array",
-                    score: 100,
-                    totalScore: 100,
-                    passSubmission: 10,
-                    totalSubmission: 100,
-                }
-            ],
+            questionList: [],
             announcementForm: {
                 title: '',
                 markdownContent: ''
@@ -708,10 +673,12 @@ export default {
                 title: '',
                 tag: '',
                 timeLimit: 1000, // ms
-                memoryLimit: 1024, // MB
+                memoryLimit: 512, // MB
                 languageSelected: 'c++',
                 totalScore: 100,
-                markdownContent: questionDesctriptionContent
+                markdownContent: questionDesctriptionContent,
+                appendixFiles: [],
+                testcaseFiles: []
             },
             homeworkForm: {
                 title: '',
@@ -773,6 +740,31 @@ export default {
                     { required: true, message: "请输入公告名称", trigger: 'blur'},
                     { min: 1, max: 30, message: "长度在1到30个字符", trigger: 'blur' },
                 ],
+            },
+            questionFormRules: {
+                title: [
+                    { required: true, message: "请输入标题", trigger: 'blur' },
+                    { min: 1, max: 30, message: "长度在1到30个字符", trigger: 'blur' },
+                ],
+                tag: [
+                    // empty
+                    { min: 1, max: 30, message: "长度在1到30个字符", trigger: 'blur' },
+                ],
+                timeLimit: [
+                    { required: true, message: "请输入时间限制", trigger: 'change'},
+                    { type: 'number', min: 1, max: 5000, message: "请设置在1ms到5000ms之间", trigger: 'change' },
+                ],
+                memoryLimit: [
+                    { required: true, message: "请输入空间限制", trigger: 'change'},
+                    { type: 'number', min: 1, max: 1024, message: "请设置在1MB到1024MB之间", trigger: 'change' },
+                ],
+                languageSelected: [
+                    { required: true, type: 'enum', message: "请输入空间限制", trigger: 'change', enum: ["c", "c++", "java", "go", "python", "javascript", "rust"]},
+                ],
+                totalScore: [
+                    { required: true, message: "请输入总分", trigger: 'change' },
+                    { type: 'number', min: 0, max: 500, message: "请设置在0到500之间", trigger: 'change' }
+                ]
             }
         }
     },
@@ -807,6 +799,9 @@ export default {
             } else if (this.selectIndex === "1") {
                 this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
                 this.fetchAnnouncements()
+            } else if (this.selectIndex === "3") {
+                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
+                this.fetchQuestions()
             } else  {
                 this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
             }
@@ -836,7 +831,7 @@ export default {
         onAnnouncementSubmit(formName) {
             this.$refs[formName].validate((valid) => {
                 if (valid) {
-                    console.log("onAnnouncementSubmit markdown submit", this.markdownContent);
+                    console.log("onAnnouncementSubmit markdown submit", this.announcementForm.markdownContent);
                     let str = new Blob([this.announcementForm.markdownContent], {
                         type: 'text/plain; charset=utf-8'
                     })
@@ -864,6 +859,90 @@ export default {
                         }
                     }).catch(err => {
                         Message.error("公告发布失败")
+                        console.log(err)
+                    })
+                } else {
+                    Message.warning("请按要求填写表单")
+                    return false;
+                }
+            })
+        },
+        handleExceed(files, fileList) {
+            Message.warning(`当前限制选择 1 个文件, 本次共选择了 ${files.length + fileList.length} 个文件`);
+        },
+        handleAppendixChange(file, fileList) {
+            this.questionForm.appendixFiles = fileList;
+        },
+        handleAppendixRemove(file, fileList) {
+            this.questionForm.appendixFiles = fileList;
+        },
+        handleTestCaseChange(file, fileList) {
+            this.questionForm.testcaseFiles = fileList;
+        },
+        handleTestCaseRemove(file, fileList) {
+            this.questionForm.testcaseFiles = fileList;
+        },
+        onQuestionSubmit(formName) {
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    console.log("onQuestionSubmit submit", this.questionForm.markdownContent);
+                    let str = new Blob([this.questionForm.markdownContent], {
+                        type: 'text/plain; charset=utf-8'
+                    })
+                    let file = new File([str], "description.md", {
+                        type: 'text/plain',
+                    });
+                    const formData = new FormData();
+                    formData.append('title', this.questionForm.title);
+                    formData.append('courseid', this.courseid);
+                    formData.append('timeLimit', this.questionForm.timeLimit);
+                    formData.append('memoryLimit', this.questionForm.memoryLimit);
+                    formData.append('tag', this.questionForm.tag);
+                    formData.append('language', this.questionForm.languageSelected)
+                    formData.append('totalScore', this.questionForm.totalScore)
+                    formData.append('description', file);
+                    if (this.questionForm.testcaseFiles.length <= 0) {
+                        Message.warning("请选择测例文件上传")
+                        return false
+                    }
+                    if (this.questionForm.testcaseFiles.length > 1) {
+                        Message.warning("请将测例文件打包成1个文件上传")
+                        return false
+                    }
+                    if (this.questionForm.appendixFiles.length > 1) {
+                        Message.warning("请将附加文件打包成1个文件上传")
+                        return false
+                    }
+                    // appendix
+                    if (this.questionForm.appendixFiles.length > 0) {
+                        if (this.questionForm.appendixFiles[0].size / 1024 / 1024 > 10.0) {
+                            Message.warning("上传文件大小不得超过10MB")
+                            return false
+                        }
+                        formData.append('appendix', this.questionForm.appendixFiles[0].raw);
+                    }
+                    // testcases
+                    if (this.questionForm.testcaseFiles[0].size / 1024 / 1024 > 10.0) {
+                        Message.warning("上传文件大小不得超过10MB")
+                        return false
+                    }
+                    formData.append('testcase', this.questionForm.testcaseFiles[0].raw)
+                    axios({
+                        method: "post",
+                        url: "/teacher/create-question",
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                        data: formData,
+                    }).then(res => {
+                        console.log(res.data)
+                        if (res.status === 200 && res.data.code === 200) {
+                            Message.success("题目发布成功")
+                        } else {
+                            Message.error("题目发布失败")
+                        }
+                    }).catch(err => {
+                        Message.error("题目发布失败")
                         console.log(err)
                     })
                 } else {
@@ -900,6 +979,38 @@ export default {
                 console.log(err)
             })
         },
+        fetchQuestions() {
+            console.log("fetchQuestions")
+            axios({
+                method: "get",
+                url: "http://localhost:1323/student/fetch-question",
+                params: {
+                    courseid: this.courseid,
+                },
+                headers: {
+                    'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                },
+            }).then(res => {
+                console.log(res.data)
+                this.questionList = []
+                if (res.data.data.result) {
+                    res.data.data.result.forEach(question => {
+                        this.questionList.push({
+                            questionId: question.ID,
+                            questionName: question.Title,
+                            tag: question.Tag,
+                            score: 0,
+                            totalScore: question.Score,
+                            passSubmission: question.TotalACNum,
+                            totalSubmission: question.TotalTestNum,
+                        })
+                    })
+                }
+            }).catch(err => {
+                Message.error("获取题目列表失败")
+                console.log(err)
+            })
+        },
         isNumber(val){
             var regPos = /^[0-9]+.?[0-9]*/; //判断是否是数字。
             if(regPos.test(val) ){
@@ -918,7 +1029,7 @@ export default {
                     method: 'get',
                     url: "http://localhost:1323/student/fetch-course-name",
                     params: {
-                        courseid: this.courseid,
+                        courseid: this.courseid
                     },
                     headers: {
                         'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
@@ -949,6 +1060,7 @@ export default {
     },
     created() {
         this.fetchAnnouncements()
+        this.fetchQuestions()
     },
     mounted() {        //写在mounted或者activated生命周期内即可
     }
