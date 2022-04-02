@@ -94,7 +94,7 @@ export default{
     mounted() {
         axios({
             method: 'get',
-            url: 'http://localhost:1323/Os/Grade',
+            url: 'http://localhost:1323/student/Os/Grade',
             params: {
                 id: localStorage.getItem("UserID") || ""
             }

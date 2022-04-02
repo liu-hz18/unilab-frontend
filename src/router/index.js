@@ -13,7 +13,6 @@ import UniLabOsGrade from "../components/OsGradeList.vue"
 import store from "@/store/store"
 import axios from "axios"
 import { Message } from "element-ui"
-// import UniLab from "../App.vue"
 
 Vue.use(VueRouter)
 

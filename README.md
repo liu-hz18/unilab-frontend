@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 # unilab-frontend
+=======
+# unilab
+
+## powered by Vue2
+>>>>>>> 7bb2493510ddac6c10b67af3964d4ff36c93eff9
 
 ## Project setup
 ```
