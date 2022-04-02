@@ -1,17 +1,37 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <!-- <UniLabEditor/> -->
+    <router-view/>
   </div>
 </template>
 
+
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+// TODO: auth login, user database, course list page, hw list page, question list page, test list page
+// import UniLabEditor from "./components/Editor.vue"
+// import UniLabCourse from "./components/CourseList.vue"
 
 export default {
-  name: 'App',
+  name: 'UniLab',
   components: {
-    HelloWorld
+    // UniLabEditor,
+    // UniLabCourse,
+
+  },
+  data() {
+    return {
+      
+    }
+  },
+  computed: {
+    
+  },
+  methods: {
+    
+  },
+  // mounted 在初始化页面完成后，再对dom节点进行相关操作
+  mounted() {
+    
   }
 }
 </script>
@@ -21,8 +41,9 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  text-align: left;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 0px;
 }
 </style>
+
