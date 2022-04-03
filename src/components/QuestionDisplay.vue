@@ -75,19 +75,15 @@
                         <el-row>
                             <el-col :span="10">
                                 <el-upload
-                                    class="upload-demo"
+                                    class="upload-code"
                                     ref="upload"
                                     multiple
                                     :limit="20"
                                     action="https://jsonplaceholder.typicode.com/posts/"
-                                    :on-preview="handleCodePreview"
-                                    :on-remove="handleCodeRemove"
                                     :before-remove="beforeCodeRemove"
-                                    :before-upload="handleBeforeCodeUpload"
                                     :on-change="handleCodeFileChange"
+                                    :on-remove="handleCodeFileRemove"
                                     :on-exceed="handleCodeExceed"
-                                    :on-success="handleCodeSuccess"
-                                    :on-error="handleCodeError"
                                     :file-list="fileList"
                                     :auto-upload="false">
                                 <el-button slot="trigger" type="primary" round size="small" icon="el-icon-folder-opened">选择文件</el-button>
@@ -174,6 +170,15 @@ export default {
                 "text/x-python": "main.py",
                 "text/javascript": "main.js",
                 "text/x-rustsrc": "main.rs"
+            },
+            languageMap: {
+                'text/x-csrc': "c",
+                'text/x-c++src': "c++",
+                'text/x-java': "java",
+                'text/x-go': "go",
+                "text/x-python": "python",
+                "text/javascript": "javascript",
+                "text/x-rustsrc": "rust",
             },
             fileList: [],
         }
@@ -325,11 +330,9 @@ export default {
                 data: formData
             }).then(res => {
                 console.log(res.data)
-                // let type = res.headers["content-type"]
                 let blob = new Blob([res.data], { type: "application/zip" })
                 let a = document.createElement("a")
                 console.log(res.headers)
-                // let fileName = res.headers["content-disposition"].split("=")[1];
                 let fileName = "appendix.zip"
                 if (!!window.ActiveXObject || "ActiveXObject" in window) {
                     // IE
@@ -363,6 +366,13 @@ export default {
             console.log(this.code, this.mode);
         },
         // code file functions
+        handleCodeFileDownload() {
+            console.log("code download", this.code);
+            let str = new Blob([this.code], {
+                type: 'text/plain; charset=utf-8'
+            })
+            saveAs(str, this.exportFileNames[this.mode])
+        },
         handleCodeSubmit() {
             console.log("code submit", this.code);
             let str = new Blob([this.code], {
@@ -373,33 +383,28 @@ export default {
             });
             console.log(file, file.raw);
             const formData = new FormData();
-            formData.append('name', 'liuhz');
-            formData.append('id', '2018011446');
+            formData.append('courseid', this.courseid);
+            formData.append('questionid', this.questionID);
+            formData.append('language', this.languageMap[this.mode]);
             formData.append('file', file);
             axios({
                 method: 'post',
-                url: 'http://localhost:1323/codeupload',
+                url: 'http://localhost:1323/student/submit-code',
                 headers: {
-                'Content-Type': 'multipart/form-data',
+                    'Content-Type': 'multipart/form-data',
                 },
                 data: formData,
             }).then(res => {
                 console.log(res);
-                if (res.code == 200) {
-                this.$message.success("提交成功");
+                if (res.status === 200 && res.data.code === 200) {
+                    Message.success("代码提交成功")
                 } else {
-                this.$message.error("提交失败");
+                    Message.error("代码提交失败")
                 }
-            }).catch(function (error) { // 请求失败处理
-                console.log(error);
+            }).catch(err => { // 请求失败处理
+                console.log(err);
+                Message.error("代码提交失败");
             });
-        },
-        handleCodeFileDownload() {
-            console.log("code download", this.code);
-            let str = new Blob([this.code], {
-                type: 'text/plain; charset=utf-8'
-            })
-            saveAs(str, this.exportFileNames[this.mode])
         },
         handleCodeFileUpload() {
             console.log("file upload", this.fileList);
@@ -407,60 +412,49 @@ export default {
                 return this.$message.warning('请选择文件上传')
             }
             const formData = new FormData();
-            formData.append('name', 'liuhz');
-            formData.append('id', '2018011446');
+            formData.append('courseid', this.courseid);
+            formData.append('questionid', this.questionID);
+            formData.append('language', this.languageMap[this.mode]);
             this.fileList.forEach(element => {
                 const filesize = element.size / 1024 / 1024;
                 if (filesize > 5.0) {
-                return this.$message.warning('单个文件大小不能超过5MB!')
+                    return this.$message.warning('单个文件大小不能超过5MB!')
                 }
                 console.log(element.raw);
                 formData.append('file', element.raw);
             })
             axios({
                 method: 'post',
-                url: 'http://localhost:1323/codeupload',
+                url: 'http://localhost:1323/student/submit-code',
                 headers: {
-                'Content-Type': 'multipart/form-data',
+                    'Content-Type': 'multipart/form-data',
                 },
                 data: formData,
             }).then(res => {
                 console.log(res);
-                if (res.code == 200) {
-                this.$refs.upload.clearFiles();
-                this.fileList = []
-                this.$message.success("上传成功");
+                if (res.status === 200 && res.data.code === 200) {
+                    this.$refs.upload.clearFiles();
+                    this.fileList = []
+                    Message.success("文件提交成功");
                 } else {
-                this.$message.error("上传失败");
+                    Message.error("文件提交失败");
                 }
             }).catch(function (error) { // 请求失败处理
                 console.log(error);
+                Message.error("文件提交失败");
             });
         },
-        handleCodeRemove(file, fileList) {
-            this.fileList = fileList;
-            console.log("remove", file, fileList);
-        },
-        handleCodePreview(file) {
-            console.log("handlePreview", file);
-        },
         handleCodeExceed(files, fileList) {
-            this.$message.warning(`当前限制选择 20 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
-        },
-        handleBeforeCodeUpload(file) {
-            console.log(file)
+            this.$message.warning(`当前限制选择 20 个文件，本次共选择了 ${files.length + fileList.length} 个文件`);
         },
         beforeCodeRemove(file) {
             console.log("beforeRemove", file);
             return this.$confirm(`确定移除 ${ file.name }?`);
         },
-        handleCodeSuccess(response, file, fileList) {
-            console.log("handleSuccess", response, file, fileList);
-        },
-        handleCodeError(err, file, fileList) {
-            console.log("handleError", err, file, fileList);
-        },
         handleCodeFileChange(file, fileList) {
+            this.fileList = fileList;
+        },
+        handleCodeFileRemove(file, fileList) {
             this.fileList = fileList;
         },
         handleLogOut() {
