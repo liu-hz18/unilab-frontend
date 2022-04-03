@@ -353,7 +353,7 @@ export default {
           // check repeated course
           var repeated = false
           this.courseList.forEach(course => {
-            if (this.createCourseForm.name === course.name) {
+            if (this.createCourseForm.name === course.name && !repeated) {
               Message.warning("课程名已存在！")
               repeated = true
             }

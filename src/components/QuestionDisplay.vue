@@ -39,19 +39,23 @@
                                 <h1 style="font-size: 25px; text-align: center; line-height:1.7;">{{ title }}</h1>
                             </el-header>
                             <el-main>
+                                <h4 style="font-size: 14px; text-align: center; line-height:1.0; color=#909399;">Time: {{ issueTime }} &nbsp;&nbsp; Creator: {{ creator }}</h4>
+                                <h4 style="font-size: 14px; text-align: center; line-height:1.0; color=#909399;">Tag: {{ tag }}</h4>
                                 <MarkdownPreview v-bind:initialValue="content" theme="oneDark"/>
+                                <el-button type="text" icon="el-icon-download" @click="downloadAppendix" v-if="appendixPath!==''">点击下载附件</el-button>
                             </el-main>
                         </el-container>
                     </el-aside>
 
                     <el-main>
                         <el-row>
-                            <el-select v-model="mode" placeholder="C++">
+                            <el-select v-model="mode" placeholder="">
                                 <el-option
                                     v-for="item in languageOptions"
                                     :key="item.value"
                                     :label="item.label"
-                                    :value="item.value">
+                                    :value="item.value"
+                                    :disabled="item.disabled">
                                 </el-option>
                             </el-select>
                         </el-row>
@@ -122,29 +126,7 @@ import 'codemirror/theme/3024-day.css'
 import axios from "axios"
 import saveAs from 'file-saver'
 import { mapMutations } from 'vuex'
-
-const questionDesctriptionContent = "##  题目描述 \n\
-\n\
-##  输入样例 \n\
-\n\
-``` \n\
-\n\
-``` \n\
-##  输出样例 \n\
-\n\
-``` \n\
-\n\
-``` \n\
-##  数据范围与约定 \n\
-##  提示 \n\
-##  评分标准 \n\
-##  评分标准 \n\
-##  评分标准 \n\
-##  评分标准 \n\
-##  评分标准 \n\
-##  评分标准 \n\
-##  评分标准 \
-";
+import { Message } from "element-ui"
 
 export default {
     name: 'UniLabQuestionDisplay',
@@ -154,21 +136,35 @@ export default {
     },
     data() {
         return {
-            username: this.$store.state.UserName || 'unknown',
             activeIndex: '1', // '1' for later push
             selectIndex: '1',
-            title: "题目 1",
-            content: questionDesctriptionContent,
+
+            username: this.$store.state.UserName || 'unknown',
+            courseid: this.initCourseID(),
+            courseName: "",
+
+            questionID: this.initQuestionID(),
+            title: "题目",
+            issueTime: "发布时间",
+            content: "",
+            tag: "",
+            appendixPath: "",
+            memoryLimit: 0,
+            timeLimit: 0,
+            language: "",
+            creator: "",
+            testCaseNum: 0,
+
             code: '',
             mode: 'text/x-c++src',
             languageOptions: [
-                {value: 'text/x-csrc', label: 'C'},
-                {value: 'text/x-c++src', label: 'C++'},
-                {value: 'text/x-java', label: 'Java'},
-                {value: 'text/x-go', label: 'Go'},
-                {value: 'text/x-python', label: 'Python'}, 
-                {value: 'text/javascript', label: 'JavaScript'}, 
-                {value: 'text/x-rustsrc', label: 'Rust'},
+                {value: 'text/x-csrc', label: 'C', disabled: false},
+                {value: 'text/x-c++src', label: 'C++', disabled: false},
+                {value: 'text/x-java', label: 'Java', disabled: false},
+                {value: 'text/x-go', label: 'Go', disabled: false},
+                {value: 'text/x-python', label: 'Python', disabled: false}, 
+                {value: 'text/javascript', label: 'JavaScript', disabled: false}, 
+                {value: 'text/x-rustsrc', label: 'Rust', disabled: false},
             ],
             exportFileNames: {
                 'text/x-csrc': "main.c",
@@ -219,8 +215,149 @@ export default {
                 this.$router.push({ path: "/home", query: {  } });
             } else {
                 console.log("handleSelect() jump to /ojlab", this.selectIndex);
-                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex } });
+                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
             }
+        },
+        isNumber(val){
+            var regPos = /^[0-9]+.?[0-9]*/; //判断是否是数字。
+            if (regPos.test(val) ) {
+                return true;
+            } else {
+                return false;
+            }
+        },
+        initCourseID() {
+            if (this.$route.query.courseid === null || this.isNumber(this.$route.query.courseid) === false) {
+                this.$router.replace({path: "/404"})
+                return 0;
+            } else {
+                this.courseid = this.$route.query.courseid
+                axios({
+                    method: 'get',
+                    url: "http://localhost:1323/student/fetch-course-name",
+                    params: {
+                        courseid: this.courseid,
+                    },
+                    headers: {
+                        'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                    }
+                }).then(res => {
+                    console.log(res.data)
+                    if (res.status === 200 && res.data.code === 200) {
+                        this.courseName = res.data.data.result
+                        Message.success("获取课程信息成功")
+                    } else {
+                        this.$router.replace("/404")
+                        Message.error("获取课程信息失败")
+                    }
+                }).catch(err => {
+                    if (err.response.status === 401) {
+                        this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                        Message.error("UNAUTHORIZED: 请重新登录")
+                        this.$router.replace("/login")
+                    } else {
+                        Message.error("获取课程列表失败")
+                        console.log(err)
+                        this.$router.replace("/404")
+                    }
+                })
+                return this.$route.query.courseid
+            }
+        },
+        initQuestionID() {
+            if (this.$route.query.id === null || this.isNumber(this.$route.query.id) === false) {
+                this.$router.replace({path: "/404"})
+                return 0;
+            } else {
+                this.questionID = this.$route.query.id
+                axios({
+                    method: "get",
+                    url: "http://localhost:1323/student/fetch-question-detail",
+                    params: {
+                        questionid: this.questionID,
+                    },
+                    headers: {
+                        'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                    }
+                }).then(res => {
+                    console.log(res.data)
+                    this.title = res.data.data.result.Title
+                    this.issueTime = res.data.data.result.IssueTime
+                    this.content = res.data.data.result.Content
+                    this.appendixPath = res.data.data.result.AppendixFile
+                    this.memoryLimit = res.data.data.result.MemoryLimit
+                    this.timeLimit = res.data.data.result.TimeLimit
+                    this.language = res.data.data.result.Language
+                    this.creator = res.data.data.result.Creator
+                    this.testCaseNum = res.data.data.result.TestCaseNum
+                    this.tag = res.data.data.result.Tag
+                    this.languageOptions.forEach(language => {
+                        if (language.label.toLowerCase() === this.language.toLowerCase()) {
+                            language.disabled = false
+                            this.mode = language.value
+                        } else {
+                            language.disabled = true
+                        }
+                    })
+                    console.log(this.appendixPath)
+                    Message.success("获取题目信息成功")
+                }).catch(err => {
+                    if (err.response.status === 401) {
+                        this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                        Message.error("UNAUTHORIZED: 请重新登录")
+                        this.$router.replace("/login")
+                    } else {
+                        Message.error("获取课程信息失败")
+                        console.log(err)
+                        this.$router.replace("/404")
+                    }
+                })
+                return this.$route.query.id
+            }
+        },
+        downloadAppendix() {
+            const formData = new FormData();
+            formData.append("path", this.appendixPath)
+            axios({
+                method: "post",
+                url: "http://localhost:1323/student/fetch-question-appendix",
+                responseType: "blob",
+                data: formData
+            }).then(res => {
+                console.log(res.data)
+                // let type = res.headers["content-type"]
+                let blob = new Blob([res.data], { type: "application/zip" })
+                let a = document.createElement("a")
+                console.log(res.headers)
+                // let fileName = res.headers["content-disposition"].split("=")[1];
+                let fileName = "appendix.zip"
+                if (!!window.ActiveXObject || "ActiveXObject" in window) {
+                    // IE
+                    window.navigator.msSaveBlob(blob, fileName);
+                } else {
+                    // 非IE
+                    a.setAttribute("download", fileName);
+                }
+                a.href = window.URL.createObjectURL(blob)
+                a.download = decodeURI(fileName);
+                console.log(a.href)
+                document.body.appendChild(a)
+                a.click()
+                window.URL.revokeObjectURL(a.href)
+                document.body.removeChild(a)
+                // saveAs(str, "appendix.zip")
+            }).catch(err => {
+                console.log(err)
+                // if (err.response.status === 401) {
+                //     this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                //     Message.error("UNAUTHORIZED: 请重新登录")
+                //     this.$router.replace("/login")
+                // } else {
+                //     Message.error("获取附件失败")
+                //     console.log(err)
+                //     this.$router.replace("/404")
+                // }
+            })
         },
         codeChangeMethod() {
             console.log(this.code, this.mode);

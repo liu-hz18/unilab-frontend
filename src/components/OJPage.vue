@@ -204,7 +204,7 @@
                     :data="showQuestionItems"
                     stripe
                     :key="updateKey"
-                    @row-click="handleRowClick"
+                    @row-click="handleQuestionRowClick"
                     style="width: 90%; margin-right: 20px;">
                     <el-table-column
                         prop="questionId"
@@ -820,6 +820,10 @@ export default {
             console.log("handleRowClick() jump to /question");
             this.$router.push({ path: "/question" });
         },
+        handleQuestionRowClick(row, column, event) {
+            console.log(row, row.questionId, row.questionName, column, event);
+            this.$router.push({ path: "/question", query: { id: row.questionId, courseid: this.courseid } });
+        },
         handleAnnouncementClick(index, announcement) {
             console.log(index, announcement);
             this.$router.push({ path: "/announcement", query: { courseid: this.courseid, annoid: this.announcementList[index].announcementId } });
@@ -885,66 +889,75 @@ export default {
         onQuestionSubmit(formName) {
             this.$refs[formName].validate((valid) => {
                 if (valid) {
-                    console.log("onQuestionSubmit submit", this.questionForm.markdownContent);
-                    let str = new Blob([this.questionForm.markdownContent], {
-                        type: 'text/plain; charset=utf-8'
+                    var repeated = false
+                    this.questionList.forEach(question => {
+                        if (this.questionForm.title === question.questionName && !repeated) {
+                            Message.warning("该题目名称已存在！")
+                            repeated = true
+                        }
                     })
-                    let file = new File([str], "description.md", {
-                        type: 'text/plain',
-                    });
-                    const formData = new FormData();
-                    formData.append('title', this.questionForm.title);
-                    formData.append('courseid', this.courseid);
-                    formData.append('timeLimit', this.questionForm.timeLimit);
-                    formData.append('memoryLimit', this.questionForm.memoryLimit);
-                    formData.append('tag', this.questionForm.tag);
-                    formData.append('language', this.questionForm.languageSelected)
-                    formData.append('totalScore', this.questionForm.totalScore)
-                    formData.append('description', file);
-                    if (this.questionForm.testcaseFiles.length <= 0) {
-                        Message.warning("请选择测例文件上传")
-                        return false
-                    }
-                    if (this.questionForm.testcaseFiles.length > 1) {
-                        Message.warning("请将测例文件打包成1个文件上传")
-                        return false
-                    }
-                    if (this.questionForm.appendixFiles.length > 1) {
-                        Message.warning("请将附加文件打包成1个文件上传")
-                        return false
-                    }
-                    // appendix
-                    if (this.questionForm.appendixFiles.length > 0) {
-                        if (this.questionForm.appendixFiles[0].size / 1024 / 1024 > 10.0) {
+                    if (!repeated) {
+                        console.log("onQuestionSubmit submit", this.questionForm.markdownContent);
+                        let str = new Blob([this.questionForm.markdownContent], {
+                            type: 'text/plain; charset=utf-8'
+                        })
+                        let file = new File([str], "description.md", {
+                            type: 'text/plain',
+                        });
+                        const formData = new FormData();
+                        formData.append('title', this.questionForm.title);
+                        formData.append('courseid', this.courseid);
+                        formData.append('timeLimit', this.questionForm.timeLimit);
+                        formData.append('memoryLimit', this.questionForm.memoryLimit);
+                        formData.append('tag', this.questionForm.tag);
+                        formData.append('language', this.questionForm.languageSelected)
+                        formData.append('totalScore', this.questionForm.totalScore)
+                        formData.append('description', file);
+                        if (this.questionForm.testcaseFiles.length <= 0) {
+                            Message.warning("请选择测例文件上传")
+                            return false
+                        }
+                        if (this.questionForm.testcaseFiles.length > 1) {
+                            Message.warning("请将测例文件打包成1个文件上传")
+                            return false
+                        }
+                        if (this.questionForm.appendixFiles.length > 1) {
+                            Message.warning("请将附加文件打包成1个文件上传")
+                            return false
+                        }
+                        // appendix
+                        if (this.questionForm.appendixFiles.length > 0) {
+                            if (this.questionForm.appendixFiles[0].size / 1024 / 1024 > 10.0) {
+                                Message.warning("上传文件大小不得超过10MB")
+                                return false
+                            }
+                            formData.append('appendix', this.questionForm.appendixFiles[0].raw);
+                        }
+                        // testcases
+                        if (this.questionForm.testcaseFiles[0].size / 1024 / 1024 > 10.0) {
                             Message.warning("上传文件大小不得超过10MB")
                             return false
                         }
-                        formData.append('appendix', this.questionForm.appendixFiles[0].raw);
-                    }
-                    // testcases
-                    if (this.questionForm.testcaseFiles[0].size / 1024 / 1024 > 10.0) {
-                        Message.warning("上传文件大小不得超过10MB")
-                        return false
-                    }
-                    formData.append('testcase', this.questionForm.testcaseFiles[0].raw)
-                    axios({
-                        method: "post",
-                        url: "/teacher/create-question",
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                        },
-                        data: formData,
-                    }).then(res => {
-                        console.log(res.data)
-                        if (res.status === 200 && res.data.code === 200) {
-                            Message.success("题目发布成功")
-                        } else {
+                        formData.append('testcase', this.questionForm.testcaseFiles[0].raw)
+                        axios({
+                            method: "post",
+                            url: "/teacher/create-question",
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                            },
+                            data: formData,
+                        }).then(res => {
+                            console.log(res.data)
+                            if (res.status === 200 && res.data.code === 200) {
+                                Message.success("题目发布成功")
+                            } else {
+                                Message.error("题目发布失败")
+                            }
+                        }).catch(err => {
                             Message.error("题目发布失败")
-                        }
-                    }).catch(err => {
-                        Message.error("题目发布失败")
-                        console.log(err)
-                    })
+                            console.log(err)
+                        })
+                    }
                 } else {
                     Message.warning("请按要求填写表单")
                     return false;

@@ -37,7 +37,7 @@
                         <h1 style="font-size: 25px; text-align: center; line-height:1.7;">{{ title }}</h1>
                     </el-header>
                     <el-main>
-                        <h4 style="font-size: 14px; text-align: center; line-height:1.0; color=#909399;">发布时间: {{ issueTime }}</h4>
+                        <h4 style="font-size: 14px; text-align: center; line-height:1.0; color=#909399;">Time: {{ issueTime }}</h4>
                         <MarkdownPreview v-bind:initialValue="content" theme="oneDark"/>
                     </el-main>
                 </el-container>
@@ -53,24 +53,6 @@ import { MarkdownPreview } from 'vue-meditor'
 import { mapMutations } from 'vuex'
 import { Message } from "element-ui"
 import axios from "axios"
-// const questionDesctriptionContent = "##  题目描述 \n\
-// \n\
-// ##  输入样例 \n\
-// \n\
-// ``` \n\
-// \n\
-// ``` \n\
-// ##  输出样例 \n\
-// \n\
-// ``` \n\
-// \n\
-// ``` \n\
-// ##  数据范围与约定 \n\
-// \n\
-// ##  提示 \n\
-// \n\
-// ##  评分标准 \n\
-// ";
 
 export default {
     name: 'UniLabAnnouncementDisplay',
@@ -83,6 +65,7 @@ export default {
             activeIndex: '1', // '1' for later push
             selectIndex: '1',
             courseid: this.initCourseID(),
+            courseName: "",
             annoid: this.initAnnouncementID(),
             issueTime: "",
             title: "公告 1",
@@ -165,7 +148,7 @@ export default {
                 this.annoid = this.$route.query.annoid
                 axios({
                     method: 'get',
-                    url: "http://localhost:1323/student/fetch-annocement",
+                    url: "http://localhost:1323/student/fetch-announcement-detail",
                     params: {
                         annoid: this.annoid,
                     },
@@ -189,7 +172,7 @@ export default {
                         Message.error("UNAUTHORIZED: 请重新登录")
                         this.$router.replace("/login")
                     } else {
-                        Message.error("获取公告列表失败")
+                        Message.error("获取公告信息失败")
                         console.log(err)
                         this.$router.replace("/404")
                     }
