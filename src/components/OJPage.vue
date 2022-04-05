@@ -58,7 +58,7 @@
                                 <el-tag :type="assignment.score == assignment.totalScore ? 'success' : ( assignment.score >= 0.6*assignment.totalScore ? 'warning' : 'danger')" effect="dark" style="width: 80px; text-align: center; margin-left: 0px;">
                                         {{ assignment.score + "/" +  assignment.totalScore }}
                                 </el-tag>
-                                <span style="margin-left: 300px; text-align: left;">{{ assignment.dueTime }}</span>
+                                <span style="margin-left: 300px; text-align: left;">截止时间：{{ assignment.dueTime }}</span>
                                 <el-tag :type="assignment.dueState ? 'info' : 'success'" effect="dark" style="width: 80px; text-align: center; margin-left: 20px;">
                                         {{ assignment.dueState ? '已结束' : '可提交' }}
                                 </el-tag>
@@ -68,7 +68,7 @@
                                 :data="assignment.questions"
                                 stripe
                                 :show-header="false"
-                                @row-click="handleRowClick"
+                                @row-click="handleAssignmentQuestionRowClick"
                                 style="width: 100%; margin-right: 20px;">
                                 <el-table-column
                                     label="state"
@@ -107,7 +107,7 @@
                         :data="showTestItems"
                         stripe
                         :key="updateKey"
-                        @row-click="handleRowClick"
+                        @row-click="handleTestQuestionRowClick"
                         style="width: 90%; margin-left: 10px;">
                         <el-table-column type="expand">
                             <template slot-scope="props">
@@ -246,8 +246,8 @@
             <!-- announcements edit and push -->
             <el-container v-else-if="selectIndex=='4'" style="width: 80%;">
                 <el-main>
-                    <el-form ref="announcementForm" :model="announcementForm" :rules="announcementFormRules" label-width="80px">
-                        <el-form-item label="Title" required>
+                    <el-form :model="announcementForm" ref="announcementForm" :rules="announcementFormRules" :key="updateKey" label-width="80px">
+                        <el-form-item label="Title" required prop="title">
                             <el-input v-model="announcementForm.title" prop="title"></el-input>
                         </el-form-item>
                         <el-form-item label="Content">
@@ -263,7 +263,7 @@
             <!-- question edit and push  -->
             <el-container v-else-if="selectIndex=='5'">
                 <el-main>
-                    <el-form :model="questionForm" ref="questionForm" :rules="questionFormRules" label-width="120px">
+                    <el-form :model="questionForm" ref="questionForm" :rules="questionFormRules" :key="updateKey" label-width="120px">
                         <el-form-item label="Title" required prop="title">
                             <el-input v-model="questionForm.title"></el-input>
                         </el-form-item>
@@ -341,26 +341,26 @@
             <!-- homework edit and push  -->
             <el-container v-else-if="selectIndex=='6'">
                 <el-main>
-                    <el-form ref="form" :model="homeworkForm" label-width="100px">
-                        <el-form-item label="Title" required>
-                            <el-input v-model="homeworkForm.title"></el-input>
+                    <el-form ref="assignmentForm" :model="assignmentForm" :rules="assignmentFormRules" :key="updateKey" label-width="100px">
+                        <el-form-item label="Title" required prop="title">
+                            <el-input v-model="assignmentForm.title"></el-input>
                         </el-form-item>
-                        <el-form-item label="Description">
-                            <el-input v-model="homeworkForm.description"></el-input>
+                        <el-form-item label="Description" prop="description">
+                            <el-input v-model="assignmentForm.description"></el-input>
                         </el-form-item>
-                        <el-form-item label="Questions" required>
-                            <el-select v-model="homeworkForm.questionIds" multiple filterable placeholder="请选择题目(可多选)" style="width: 800px;">
+                        <el-form-item label="Questions" required prop="questionIds">
+                            <el-select v-model="assignmentForm.questionIds" multiple filterable placeholder="请选择题目(可多选)" style="width: 800px;">
                                 <el-option
-                                    v-for="item in questionAvailable"
-                                    :key="item.id"
-                                    :label="item.id + '  ' + item.name + '  (' +  item.tag + ')'"
-                                    :value="item.id">
+                                    v-for="item in questionList"
+                                    :key="item.questionId"
+                                    :label="item.questionId + '  ' + item.questionName + '  (' +  item.tag + ')'"
+                                    :value="item.questionId">
                                 </el-option>
                             </el-select>
                         </el-form-item>
-                        <el-form-item label="Due Time" required>
+                        <el-form-item label="Due Time" required prop="timerange">
                             <el-date-picker
-                                v-model="homeworkForm.dueTime"
+                                v-model="assignmentForm.timerange"
                                 type="datetimerange"
                                 start-placeholder="作业公布时间"
                                 end-placeholder="截止提交时间"
@@ -368,7 +368,7 @@
                             </el-date-picker>
                         </el-form-item>
                         <el-form-item>
-                            <el-button type="primary" @click="onSubmit">发布作业</el-button>
+                            <el-button type="primary" @click="onAssignmentSubmit('assignmentForm')">发布作业</el-button>
                         </el-form-item>
                     </el-form>
                 </el-main>
@@ -419,129 +419,7 @@ export default {
             searchQuestion: '',
             updateKey: false,
             announcementList: [],
-            assignmentsInfo: [
-                {
-                    assignmentId: 1,
-                    assignmentName: "assignment 1",
-                    dueTime: "2022/03/15 23:59",
-                    dueState: true,
-                    description: "请尽快提交",
-                    score: 120,
-                    totalScore: 300,
-                    questions: [
-                        {
-                            questionId: 1,
-                            questionName: "questions 1",
-                            tag: "C++, Array",
-                            score: 100,
-                            totalScore: 100,
-                        },
-                        {
-                            questionId: 2,
-                            questionName: "questions 2",
-                            tag: "C++, Array",
-                            score: 0,
-                            totalScore: 100,
-                        },
-                        {
-                            questionId: 3,
-                            questionName: "questions 3",
-                            tag: "C++, Array",
-                            score: 60,
-                            totalScore: 100,
-                        }
-                    ]
-                },
-                {
-                    assignmentId: 2,
-                    assignmentName: "assignment 2",
-                    dueTime: "2022/03/15 23:59",
-                    dueState: false,
-                    introduction: "请尽快提交",
-                    score: 120,
-                    totalScore: 300,
-                    questions: [
-                        {
-                            questionId: 1,
-                            questionName: "questions 1",
-                            tag: "C++, Array",
-                            score: 70,
-                            totalScore: 100,
-                        },
-                        {
-                            questionId: 2,
-                            questionName: "questions 2",
-                            tag: "C++, Array",
-                            score: 80,
-                            totalScore: 100,
-                        },
-                        {
-                            questionId: 3,
-                            questionName: "questions 3",
-                            tag: "C++, Array",
-                            score: 100,
-                            totalScore: 100,
-                        }
-                    ]
-                },
-                {
-                    assignmentId: 3,
-                    assignmentName: "assignment 3",
-                    dueTime: "2022/03/15 23:59",
-                    dueState: false,
-                    introduction: "请尽快提交",
-                    score: 120,
-                    totalScore: 300,
-                    questions: [
-                        {
-                            questionId: 1,
-                            questionName: "questions 1",
-                            tag: "C++, Array",
-                            score: 0,
-                            totalScore: 100,
-                        },
-                        {
-                            questionId: 2,
-                            questionName: "questions 2",
-                            tag: "C++, Array",
-                            score: 100,
-                            totalScore: 100,
-                        },
-                    ]
-                },
-                {
-                    assignmentId: 4,
-                    assignmentName: "assignment 4",
-                    dueTime: "2022/03/15 23:59",
-                    dueState: true,
-                    introduction: "请尽快提交",
-                    score: 120,
-                    totalScore: 300,
-                    questions: [
-                        {
-                            questionId: 1,
-                            questionName: "questions 1",
-                            tag: "Python, Array",
-                            score: 0,
-                            totalScore: 100,
-                        },
-                        {
-                            questionId: 2,
-                            questionName: "questions 2",
-                            tag: "Python, Array",
-                            score: 70,
-                            totalScore: 100,
-                        },
-                        {
-                            questionId: 3,
-                            questionName: "questions 3",
-                            tag: "Python, Array",
-                            score: 100,
-                            totalScore: 100,
-                        }
-                    ]
-                },
-            ],
+            assignmentsInfo: [],
             testResults: [
                 {
                     testId: 0,
@@ -680,59 +558,12 @@ export default {
                 appendixFiles: [],
                 testcaseFiles: []
             },
-            homeworkForm: {
+            assignmentForm: {
                 title: '',
                 description: '',
-                dueTime: '',
-                questionIds: []
+                timerange: [],
+                questionids: [],
             },
-            questionAvailable: [
-                {
-                    id: 0,
-                    name: "test 1",
-                    tag: "C++", 
-                },
-                {
-                    id: 1,
-                    name: "test 2",
-                    tag: "Python", 
-                },
-                {
-                    id: 2,
-                    name: "test 3",
-                    tag: "C++", 
-                },
-                {
-                    id: 3,
-                    name: "test 3",
-                    tag: "C++", 
-                },
-                {
-                    id: 4,
-                    name: "test 3",
-                    tag: "C++", 
-                },
-                {
-                    id: 5,
-                    name: "test 3",
-                    tag: "C++", 
-                },
-                {
-                    id: 6,
-                    name: "test 3",
-                    tag: "C++", 
-                },
-                {
-                    id: 7,
-                    name: "test 3",
-                    tag: "C++", 
-                },
-                {
-                    id: 8,
-                    name: "test 3",
-                    tag: "C++", 
-                }
-            ],
 
             // form validator
             announcementFormRules: {
@@ -765,7 +596,22 @@ export default {
                     { required: true, message: "请输入总分", trigger: 'change' },
                     { type: 'number', min: 0, max: 500, message: "请设置在0到500之间", trigger: 'change' }
                 ]
-            }
+            },
+            assignmentFormRules: {
+                title: [
+                    { required: true, message: "请输入标题", trigger: 'blur' },
+                    { min: 1, max: 30, message: "长度在1到30个字符", trigger: 'blur' },
+                ],
+                description: [
+                    { min: 1, max: 100, message: "长度在1到100个字符", trigger: 'blur' },
+                ],
+                questionIds: [
+                    { type: 'array', required: true, message: "请选择本次作业的题目", trigger: 'change' },
+                ],
+                timerange: [
+
+                ]
+            },
         }
     },
     computed: {
@@ -806,7 +652,7 @@ export default {
                 this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
             }
             // WARN: bind a key to force update table to avoid rendering failure
-            this.updateKey = !this.updateKey;
+            this.updateKey = key;
         },
         announcementDesctriptionChanged(content) {
             this.announcementForm.markdownContent = content;
@@ -815,10 +661,13 @@ export default {
             console.log("from child", content);
             this.questionForm.markdownContent = content;
         },
-        handleRowClick(row, column, event) {
+        handleTestQuestionRowClick(row, column, event) {
             console.log(row, row.id, row.name, column, event);
-            console.log("handleRowClick() jump to /question");
-            this.$router.push({ path: "/question" });
+            this.$router.push({ path: "/question", query: { id: row.questionId, courseid: this.courseid } });
+        },
+        handleAssignmentQuestionRowClick(row, column, event) {
+            console.log(row, row.questionId, row.questionName, column, event);
+            this.$router.push({ path: "/question", query: { id: row.questionId, courseid: this.courseid } });
         },
         handleQuestionRowClick(row, column, event) {
             console.log(row, row.questionId, row.questionName, column, event);
@@ -950,6 +799,7 @@ export default {
                             console.log(res.data)
                             if (res.status === 200 && res.data.code === 200) {
                                 Message.success("题目发布成功")
+                                this.fetchQuestions()
                             } else {
                                 Message.error("题目发布失败")
                             }
@@ -1069,11 +919,110 @@ export default {
                 })
                 return this.$route.query.courseid
             }
-        }
+        },
+        onAssignmentSubmit(formName) {
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    var repeated = false
+                    this.assignmentsInfo.forEach(assignment => {
+                        if (assignment.assignmentName == this.assignmentForm.title && !repeated) {
+                            Message.warning("该作业名已存在！")
+                            repeated = true
+                        }
+                    })
+                    var data = {
+                        title: this.assignmentForm.title,
+                        description: this.assignmentForm.description,
+                        courseid: Number(this.courseid),
+                        begintime: this.assignmentForm.timerange[0].format('yyyy-MM-dd hh:mm:ss'),
+                        duetime: this.assignmentForm.timerange[1].format('yyyy-MM-dd hh:mm:ss'),
+                        questionids: this.assignmentForm.questionIds,
+                    }
+                    if (!repeated) {
+                        console.log("onAssignmentSubmit submit", data);
+                        axios({
+                            method: "post",
+                            url: "/teacher/create-assignment",
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            data: data,
+                        }).then(res => {
+                            console.log(res.data)
+                            if (res.status === 200 && res.data.code === 200) {
+                                Message.success("作业发布成功")
+                                this.fetchAssignmentInfo()
+                            } else {
+                                Message.error("作业发布失败")
+                            }
+                        }).catch(err => {
+                            Message.error("作业发布失败")
+                            console.log(err)
+                        })
+                    }
+                } else {
+                    Message.warning("请按要求填写表单")
+                    return false;
+                }
+            })
+        },
+        fetchAssignmentInfo() {
+            console.log("fetchAssignmentInfo")
+            axios({
+                method: "get",
+                url: "http://localhost:1323/student/fetch-assignment",
+                params: {
+                    courseid: this.courseid,
+                },
+                headers: {
+                    'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                },
+            }).then(res => {
+                console.log(res.data)
+                this.assignmentsInfo = []
+                if (res.data.data.result) {
+                    res.data.data.result.forEach(assignment => {
+                        var tempAssignment = {
+                            assignmentId: assignment.ID,
+                            assignmentName: assignment.Title,
+                            beginTime: new Date(Date.parse(assignment.BeginTime)).format('yyyy-MM-dd hh:mm:ss'),
+                            dueTime: new Date(Date.parse(assignment.DueTime)).format('yyyy-MM-dd hh:mm:ss'),
+                            dueState: false,
+                            description: assignment.Description,
+                            score: 0,
+                            totalScore: 0,
+                            questions: []
+                        }
+                        var total_score = 0
+                        var score = 0
+                        assignment.Questions.forEach(question => {
+                            tempAssignment.questions.push({
+                                questionId: question.ID,
+                                questionName: question.Title,
+                                tag: question.Tag,
+                                score: question.Score,
+                                totalScore: question.TotalScore,
+                            })
+                            total_score += question.TotalScore
+                            score += question.Score
+                        })
+                        tempAssignment.score = score
+                        tempAssignment.totalScore = total_score
+                        tempAssignment.dueState = new Date() > new Date(Date.parse(assignment.DueTime));
+                        this.assignmentsInfo.push(tempAssignment)
+                    })
+
+                }
+            }).catch(err => {
+                Message.error("获取题目列表失败")
+                console.log(err)
+            })
+        },
     },
     created() {
         this.fetchAnnouncements()
         this.fetchQuestions()
+        this.fetchAssignmentInfo()
     },
     mounted() {        //写在mounted或者activated生命周期内即可
     }

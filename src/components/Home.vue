@@ -129,17 +129,17 @@
             </el-select>
           </el-form-item>
           <el-form-item label="请选择教学人员" required prop="teachers">
-            <el-select v-model="createCourseForm.teachers" placeholder="可多选" multiple filterable reserve-keyword clearable :loading="fetchingUsers" :loading-text="'Loading...'" @visible-change="selectorChange" style="width: 90%;">
+            <el-select v-model="createCourseForm.teachers" placeholder="可多选" multiple filterable reserve-keyword clearable :loading="fetchingUsers" :loading-text="'Loading...'" @visible-change="teacherSelectorChange" style="width: 90%;">
               <el-option
-                  v-for="user in usersAvailable"
+                  v-for="user in teachersAvailable"
                   :key="user.id"
                   :label="user.id + '  ' + user.name"
                   :value="user.id">
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="请选择或导入学生" required prop="students">
-            <el-select v-model="createCourseForm.students" placeholder="可多选" multiple filterable reserve-keyword collapse-tags clearable :loading="fetchingUsers" :loading-text="'Loading...'" @visible-change="selectorChange" style="width: 90%;">
+          <el-form-item label="请选择或导入学生 (若导入Excel文件将自动为学生注册账号)" required prop="students">
+            <el-select v-model="createCourseForm.students" placeholder="可多选" multiple filterable reserve-keyword collapse-tags clearable :loading="fetchingTeachers" :loading-text="'Loading...'" @visible-change="studentSelectorChange" style="width: 90%;">
               <el-option
                   v-for="user in usersAvailable"
                   :key="user.id"
@@ -205,6 +205,7 @@ export default {
     return {
       username: (this.$store.state.UserName || 'unknown'),
       fetchingUsers: true,
+      fetchingTeachers: true,
       courseList: [],
       activities: [
         {
@@ -250,6 +251,7 @@ export default {
         students: [],
       },
       usersAvailable: [],
+      teachersAvailable: [],
       termAvailable: [
         "2021-2022 春季学期",
         "2022-2023 秋季学期",
@@ -303,6 +305,7 @@ export default {
     },
     handleUploadStudentRemove(file, fileList) {
       console.log(file, fileList)
+      this.createCourseForm.students = []
     },
     readSingleExcelFile(file) {
       if (!/\.(xls|xlsx)$/.test(file.name.toLowerCase())) {
@@ -392,8 +395,8 @@ export default {
       Message.success("退出登录", localStorage.getItem("UserID"))
       this.$router.push("/login")
     },
-    selectorChange(open) {
-      console.log("selectorChange")
+    studentSelectorChange(open) {
+      console.log("studentSelectorChange")
       if (open && this.fetchingUsers) {
         console.log("open and fetching")
         // 发送数据给后端, json格式
@@ -412,6 +415,29 @@ export default {
         }).catch( err => {
           console.log(err)
           Message.error("获取用户列表失败")
+        })
+      }
+    },
+    teacherSelectorChange(open) {
+      console.log("teacherSelectorChange")
+      if (open && this.fetchingTeachers) {
+        console.log("open and fetching")
+        // 发送数据给后端, json格式
+        axios({
+          method: 'get',
+          url: "teacher/fetch-all-teacher",
+        }).then( res => {
+          console.log(res.data)
+          res.data.data.result.forEach(user => {
+            this.teachersAvailable.push({
+              id: user.id,
+              name: user.name
+            })
+          })
+          this.fetchingTeachers = false;
+        }).catch( err => {
+          console.log(err)
+          Message.error("获取教师列表失败")
         })
       }
     },

@@ -348,7 +348,6 @@ export default {
                 a.click()
                 window.URL.revokeObjectURL(a.href)
                 document.body.removeChild(a)
-                // saveAs(str, "appendix.zip")
             }).catch(err => {
                 console.log(err)
                 // if (err.response.status === 401) {
