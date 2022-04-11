@@ -16,6 +16,12 @@ import { Message } from "element-ui"
 
 Vue.use(VueRouter)
 
+const AutoritityMap = {
+    "admin": 2,
+    "teacher": 1,
+    "student": 0
+}
+
 const router = new VueRouter({
     mode: 'history',
     routes: [
@@ -24,7 +30,7 @@ const router = new VueRouter({
             name: "admin",
             component: UniLabAdmin,
             meta: {
-                permission: 'admin' // ['admin', 'teacher', 'student']
+                permission: AutoritityMap["admin"]
             }
         },
         {
@@ -34,42 +40,63 @@ const router = new VueRouter({
         {
             path: '/login',
             name: 'login',
-            component: UniLabLogin
+            component: UniLabLogin,
         },
         {
             path: '/home',
             name: 'home',
-            component: UniLabHome
+            component: UniLabHome,
+            meta: {
+                permission: AutoritityMap["student"]
+            }
         },
         {
             path: "/ojlab",
             name: "ojlab",
-            component: UniLabOJPage
+            component: UniLabOJPage,
+            meta: {
+                permission: AutoritityMap["student"]
+            }
         },
         {
             path: "/os",
             name: "os",
-            component: UniLabOsGrade
+            component: UniLabOsGrade,
+            meta: {
+                permission: AutoritityMap["student"]
+            }
         },
         {
             path: '/editor',
             name: "Editor",
-            component: UniLabEditor
+            component: UniLabEditor,
+            meta: {
+                permission: AutoritityMap["student"]
+            }
         },
         {
             path: "/announcement",
             name: "announcement",
-            component: UniLabAnnouncementDisplay
+            component: UniLabAnnouncementDisplay,
+            meta: {
+                permission: AutoritityMap["student"]
+            }
         },
         {
             path: "/question",
             name: "question",
-            component: UniLabQuestionDisplay
+            component: UniLabQuestionDisplay,
+            meta: {
+                permission: AutoritityMap["student"]
+            }
         },
         {
             path: "/404",
             name: "NotFound",
-            component: UniLab404
+            component: UniLab404,
+            meta: {
+                permission: AutoritityMap["student"]
+            }
         },
         {
             path: "*",
@@ -81,7 +108,7 @@ const router = new VueRouter({
 // 路由中间件
 // 使用 router.beforeEach 注册一个全局前置守卫，判断用户是否登陆并鉴权
 router.beforeEach((to, from, next) => {
-    if(to.query.token && to.query.username){
+    if(to.path === "/login" && to.query.token && to.query.username){
         // bearer: 持票人
         let userToken = 'Bearer ' + to.query.token;
         // 将用户token保存到vuex中
@@ -99,7 +126,6 @@ router.beforeEach((to, from, next) => {
         let token = localStorage.getItem('Authorization');
         let permission = localStorage.getItem('Permission');
         if (token === null || token === '') {
-            // next('/login');
             axios({
                 method: 'get',
                 url: 'http://localhost:1323/login',
@@ -116,7 +142,7 @@ router.beforeEach((to, from, next) => {
                 console.log(error);
             });
         } else if ( to.meta.permission ) {
-            permission === to.meta.permission ? next() : next("/404");
+            parseInt(permission) >= parseInt(to.meta.permission) ? next() : next("/404");
         } else {
             next();
         }

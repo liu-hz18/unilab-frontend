@@ -110,7 +110,7 @@
         </el-aside>
       </el-container>
 
-      <el-dialog title="新建课程" :visible.sync="dialogFormVisible">
+      <el-dialog title="新建课程" :visible.sync="dialogFormVisible" @close="createCourseDialogClose">
         <el-form :model="createCourseForm" :rules="createCourseFormRules" ref="createCourseForm" label-width="140px" >
           <el-form-item label="课程名称" required prop="name">
             <el-input v-model="createCourseForm.name" autocomplete="off"></el-input>
@@ -129,7 +129,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="请选择教学人员" required prop="teachers">
-            <el-select v-model="createCourseForm.teachers" placeholder="可多选" multiple filterable reserve-keyword clearable :loading="fetchingUsers" :loading-text="'Loading...'" @visible-change="teacherSelectorChange" style="width: 90%;">
+            <el-select v-model="createCourseForm.teachers" placeholder="可多选" multiple filterable reserve-keyword clearable :loading="fetchingTeachers" :loading-text="'Loading...'" @visible-change="teacherSelectorChange" style="width: 90%;">
               <el-option
                   v-for="user in teachersAvailable"
                   :key="user.id"
@@ -139,7 +139,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="请选择或导入学生 (若导入Excel文件将自动为学生注册账号)" required prop="students">
-            <el-select v-model="createCourseForm.students" placeholder="可多选" multiple filterable reserve-keyword collapse-tags clearable :loading="fetchingTeachers" :loading-text="'Loading...'" @visible-change="studentSelectorChange" style="width: 90%;">
+            <el-select v-model="createCourseForm.students" placeholder="可多选" multiple filterable reserve-keyword collapse-tags clearable :loading="fetchingUsers" :loading-text="'Loading...'" @visible-change="studentSelectorChange" style="width: 90%;">
               <el-option
                   v-for="user in usersAvailable"
                   :key="user.id"
@@ -345,8 +345,22 @@ export default {
           break;
         }
         const id = parseInt(content[i]['学号']);
+        const name = content[i]['姓名'];
         if (this.createCourseForm.students.indexOf(id) == -1) {
           this.createCourseForm.students.push(id)
+        }
+        var exists = false;
+        for (var j = 0, user_len=this.usersAvailable.length; j < user_len; j++) {
+          if (parseInt(this.usersAvailable[j].id) === id) {
+            exists = true;
+            break;
+          }
+        }
+        if (!exists) {
+          this.usersAvailable.push({
+            id: id,
+            name: name,
+          })
         }
       }
     },
@@ -363,6 +377,24 @@ export default {
           })
           if (!repeated) {
             this.dialogFormVisible = false;
+            var tempCreateCourseForm = {
+              name: this.createCourseForm.name,
+              type: this.createCourseForm.type,
+              creator: this.createCourseForm.creator,
+              term: this.createCourseForm.term,
+              teachers: this.createCourseForm.teachers,
+              students: []
+            }
+            this.createCourseForm.students.forEach(id => {
+              var name = "unknown"
+              for (var i = 0, len=this.usersAvailable.length; i < len; i++) {
+                if (this.usersAvailable[i].id === parseInt(id)) {
+                  name = this.usersAvailable[i].name
+                  break
+                }
+              }
+              tempCreateCourseForm.students.push({id: id, name: name})
+            })
             // 发送数据给后端, json格式
             axios({
               method: 'post',
@@ -370,7 +402,7 @@ export default {
               header:{
                 'Content-Type':'application/json',  //如果写成contentType会报错
               },
-              data: this.createCourseForm
+              data: tempCreateCourseForm
             }).then( res => {
               console.log(res.data)
               if (res.status === 200 && res.data.code === 200) {
@@ -398,6 +430,7 @@ export default {
     studentSelectorChange(open) {
       console.log("studentSelectorChange")
       if (open && this.fetchingUsers) {
+        this.usersAvailable = []
         console.log("open and fetching")
         // 发送数据给后端, json格式
         axios({
@@ -422,6 +455,8 @@ export default {
       console.log("teacherSelectorChange")
       if (open && this.fetchingTeachers) {
         console.log("open and fetching")
+        this.teachersAvailable = []
+        this.createCourseForm.teachers = []
         // 发送数据给后端, json格式
         axios({
           method: 'get',
@@ -435,6 +470,7 @@ export default {
             })
           })
           this.fetchingTeachers = false;
+          this.createCourseForm.teachers.push(parseInt(localStorage.getItem("UserID")));
         }).catch( err => {
           console.log(err)
           Message.error("获取教师列表失败")
@@ -480,11 +516,15 @@ export default {
           console.log(err)
         }
       })
+    },
+    createCourseDialogClose() {
+      this.dialogFormVisible = false;
+      this.fetchingTeachers = true;
+      this.fetchingUsers = true;
     }
   },
   created() { // before main.js init
     this.fetchUserCourses()
-    this.createCourseForm.teachers.push(parseInt(localStorage.getItem("UserID")))
   },
   // mounted 在初始化页面完成后，再对dom节点进行相关操作
   mounted() {

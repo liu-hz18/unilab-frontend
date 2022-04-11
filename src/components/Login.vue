@@ -49,23 +49,7 @@ export default {
             });
         }
     },
-    mounted(){
-        // console.log("test");
-        // console.log(this.$route.query);
-        // let _this = this;
-        // if(this.$route.query.token){
-        //     // bearer: 持票人
-        //     _this.userToken = 'Bearer ' + this.$route.query.token;
-        //     // 将用户token保存到vuex中
-        //     _this.CHANGE_LOCALSTORAGE_ON_LOGIN({
-        //         Authorization: _this.userToken,
-        //         UserName: this.$route.query.username,
-        //         Permission: this.$route.query.permission,
-        //         UserID: this.$route.query.userid,
-        //     });
-        //     _this.$router.push('/home');
-        //     Message.error('登陆成功');
-        // }
-    }
+    mounted(){ }
 };
+
 </script>
