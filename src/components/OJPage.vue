@@ -107,6 +107,8 @@
                         :data="showTestItems"
                         stripe
                         :key="updateKey"
+                        row-key="testId"
+                        :default-sort = "{prop: 'uploadTime', order: 'descending'}"
                         @row-click="handleTestQuestionRowClick"
                         style="width: 90%; margin-left: 10px;">
                         <el-table-column type="expand">
@@ -320,15 +322,16 @@
                             <el-upload
                                 class="upload-testcase"
                                 action="https://jsonplaceholder.typicode.com/posts/"
-                                :limit="1"
-                                accept=".zip,.rar"
+                                multiple
+                                :limit="40"
+                                accept=".in,.ans"
                                 :on-change="handleTestCaseChange"
                                 :on-remove="handleTestCaseRemove"
                                 :on-exceed="handleExceed"
                                 :file-list="questionForm.testcaseFiles"
                                 :auto-upload="false">
                                 <el-button size="small" type="primary">点击上传</el-button>
-                                <div slot="tip" class="el-upload__tip">只能上传zip文件, 且不超过10MB。</div>
+                                <div slot="tip" class="el-upload__tip">测例文件应包含 1对或多对 .in, .ans 文件(形如1.in, 1.ans, 2.in, 2.ans..., 序应从1开始), 且每个文件不超过2MB。</div>
                             </el-upload>
                         </el-form-item>
                         <el-form-item>
@@ -409,6 +412,9 @@ export default {
     },
     data() {
         return {
+            // 刷新评测计时器
+            timer: null,
+
             username: this.$store.state.UserName || 'unknown',
             courseid: this.initCourseID(),
             courseName: "",
@@ -420,119 +426,8 @@ export default {
             updateKey: false,
             announcementList: [],
             assignmentsInfo: [],
-            testResults: [
-                {
-                    testId: 0,
-                    name: "question 1",
-                    score: 100,
-                    totalScore: 100,
-                    language: "C++",
-                    uploadTime: "2022/3/15 23:54",
-                    fileSize: "1.5KB", // KB
-                    passSubmission: 10,
-                    totalSubmission: 100,
-                    testCases: [
-                        {
-                            caseId: 0,
-                            state: "Accepted", // ["Accepted", "Compile Error", "Wrong Answer", "Runtime Error", "Time Limit Exceed", "Memory Limit Exceed", "Unknown Error", "Compiling", "Running"]
-                            timeElapsed: 100, // ms
-                            memoryUsage: 1024, // KB
-                        },
-                        {
-                            caseId: 1,
-                            state: "Running",
-                            timeElapsed: 100, // ms
-                            memoryUsage: 1024, // KB
-                        },
-                        {
-                            caseId: 2,
-                            state: "Wrong Answer",
-                            timeElapsed: 100, // ms
-                            memoryUsage: 1024, // KB
-                        },
-                        {
-                            caseId: 3,
-                            state: "Runtime Error", // ["Accepted", "Compile Error", "Wrong Answer", "Runtime Error", "Time Limit Exceed", "Memory Limit Exceed", "Unknown Error"]
-                            timeElapsed: 100, // ms
-                            memoryUsage: 1024, // KB
-                        }
-                    ]
-                },
-                {
-                    testId: 0,
-                    name: "question 1",
-                    score: 100,
-                    totalScore: 100,
-                    language: "C++",
-                    uploadTime: "2022/3/15 23:54",
-                    fileSize: "1.5KB", // KB
-                    passSubmission: 10,
-                    totalSubmission: 100,
-                    testCases: [
-                        {
-                            caseId: 0,
-                            state: "Accepted", // ["Accepted", "Compile Error", "Wrong Answer", "Runtime Error", "Time Limit Exceed", "Memory Limit Exceed", "Unknown Error"]
-                            timeElapsed: 100, // ms
-                            memoryUsage: 1024, // KB
-                        },
-                        {
-                            caseId: 1,
-                            state: "Compile Error", // ["Accepted", "Compile Error", "Wrong Answer", "Runtime Error", "Time Limit Exceed", "Memory Limit Exceed", "Unknown Error"]
-                            timeElapsed: 100, // ms
-                            memoryUsage: 1024, // KB
-                        },
-                        {
-                            caseId: 2,
-                            state: "Wrong Answer", // ["Accepted", "Compile Error", "Wrong Answer", "Runtime Error", "Time Limit Exceed", "Memory Limit Exceed", "Unknown Error"]
-                            timeElapsed: 100, // ms
-                            memoryUsage: 1024, // KB
-                        },
-                        {
-                            caseId: 3,
-                            state: "Runtime Error", // ["Accepted", "Compile Error", "Wrong Answer", "Runtime Error", "Time Limit Exceed", "Memory Limit Exceed", "Unknown Error"]
-                            timeElapsed: 100, // ms
-                            memoryUsage: 1024, // KB
-                        }
-                    ]
-                },
-                {
-                    testId: 0,
-                    name: "question 1",
-                    score: 100,
-                    totalScore: 100,
-                    language: "C++",
-                    uploadTime: "2022/3/15 23:54",
-                    fileSize: "1.5KB", // KB
-                    passSubmission: 10,
-                    totalSubmission: 100,
-                    testCases: [
-                        {
-                            caseId: 0,
-                            state: "Accepted", // ["Accepted", "Compile Error", "Wrong Answer", "Runtime Error", "Time Limit Exceed", "Memory Limit Exceed", "Unknown Error"]
-                            timeElapsed: 100, // ms
-                            memoryUsage: 1024, // KB
-                        },
-                        {
-                            caseId: 1,
-                            state: "Compile Error", // ["Accepted", "Compile Error", "Wrong Answer", "Runtime Error", "Time Limit Exceed", "Memory Limit Exceed", "Unknown Error"]
-                            timeElapsed: 100, // ms
-                            memoryUsage: 1024, // KB
-                        },
-                        {
-                            caseId: 2,
-                            state: "Wrong Answer", // ["Accepted", "Compile Error", "Wrong Answer", "Runtime Error", "Time Limit Exceed", "Memory Limit Exceed", "Unknown Error"]
-                            timeElapsed: 100, // ms
-                            memoryUsage: 1024, // KB
-                        },
-                        {
-                            caseId: 3,
-                            state: "Runtime Error", // ["Accepted", "Compile Error", "Wrong Answer", "Runtime Error", "Time Limit Exceed", "Memory Limit Exceed", "Unknown Error"]
-                            timeElapsed: 100, // ms
-                            memoryUsage: 1024, // KB
-                        }
-                    ]
-                }
-            ],
+            testids: [],
+            testResults: [],
             questionList: [],
             announcementForm: {
                 title: '',
@@ -645,10 +540,14 @@ export default {
             } else if (this.selectIndex === "1") {
                 this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
                 this.fetchAnnouncements()
+                this.fetchAssignmentInfo()
+            } else if (this.selectIndex === "2") {
+                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
+                this.fetchTestIDs()
             } else if (this.selectIndex === "3") {
                 this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
                 this.fetchQuestions()
-            } else  {
+            } else {
                 this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
             }
             // WARN: bind a key to force update table to avoid rendering failure
@@ -762,32 +661,59 @@ export default {
                         formData.append('language', this.questionForm.languageSelected)
                         formData.append('totalScore', this.questionForm.totalScore)
                         formData.append('description', file);
+                        this.questionForm.testcaseFiles = this.questionForm.testcaseFiles || []
                         if (this.questionForm.testcaseFiles.length <= 0) {
                             Message.warning("请选择测例文件上传")
+                            this.questionForm.testcaseFiles = []
                             return false
                         }
-                        if (this.questionForm.testcaseFiles.length > 1) {
-                            Message.warning("请将测例文件打包成1个文件上传")
+                        if (this.questionForm.testcaseFiles.length%2 === 1) {
+                            Message.warning("测例文件至少应包含 1对 .in, .ans 文件(形如1.in, 1.ans, 2.in, 2.ans..., 序应从1开始)")
+                            this.questionForm.testcaseFiles = []
                             return false
                         }
                         if (this.questionForm.appendixFiles.length > 1) {
                             Message.warning("请将附加文件打包成1个文件上传")
+                            this.questionForm.appendixFiles = []
                             return false
                         }
                         // appendix
                         if (this.questionForm.appendixFiles.length > 0) {
                             if (this.questionForm.appendixFiles[0].size / 1024 / 1024 > 10.0) {
                                 Message.warning("上传文件大小不得超过10MB")
+                                this.questionForm.testcaseFiles = []
                                 return false
                             }
                             formData.append('appendix', this.questionForm.appendixFiles[0].raw);
                         }
                         // testcases
-                        if (this.questionForm.testcaseFiles[0].size / 1024 / 1024 > 10.0) {
-                            Message.warning("上传文件大小不得超过10MB")
-                            return false
+                        var testcaseNum = parseInt(this.questionForm.testcaseFiles.length/2)
+                        console.log(testcaseNum)
+                        for (var k = 1; k <= testcaseNum; k++) {
+                            var valid_in = false
+                            var valid_ans = false
+                            for (let testcase of this.questionForm.testcaseFiles) {
+                                if (!valid_in && testcase.name === k + ".in") {
+                                    valid_in = true
+                                }
+                                if (!valid_ans && testcase.name === k + ".ans") {
+                                    valid_ans = true
+                                }
+                            }
+                            if (!valid_in || !valid_ans) {
+                                Message.warning("测例文件应包含 1对或多对 .in, .ans 文件(形如1.in, 1.ans, 2.in, 2.ans..., 序应从1开始)")
+                                this.questionForm.testcaseFiles = []
+                                return false
+                            }
                         }
-                        formData.append('testcase', this.questionForm.testcaseFiles[0].raw)
+                        this.questionForm.testcaseFiles.forEach(testcase => {
+                            if (testcase.size / 1024 / 1024 > 10.0) {
+                                Message.warning("上传文件大小不得超过2MB")
+                                this.questionForm.testcaseFiles = []
+                                return false
+                            }
+                            formData.append('testcase', testcase.raw)
+                        })
                         axios({
                             method: "post",
                             url: "/teacher/create-question",
@@ -876,11 +802,10 @@ export default {
         },
         isNumber(val){
             var regPos = /^[0-9]+.?[0-9]*/; //判断是否是数字。
-            if(regPos.test(val) ){
+            if (regPos.test(val)) {
                 return true;
-            }else{
-                return false;
             }
+            return false;
         },
         initCourseID() {
             if (this.$route.query.courseid === null || this.isNumber(this.$route.query.courseid) === false) {
@@ -1018,11 +943,108 @@ export default {
                 console.log(err)
             })
         },
+        fetchTestIDs() {
+            console.log("fetchTestIDs")
+            axios({
+                method: "get",
+                url: "http://localhost:1323/student/fetch-all-testids",
+                params: {
+                    courseid: this.courseid,
+                },
+                headers: {
+                    'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                },
+            }).then(res => {
+                console.log(res)
+                this.testids = []
+                if (res.data.data.result) {
+                    res.data.data.result.forEach(id => {
+                        this.testids.push(parseInt(id))
+                    })
+                }
+                console.log(this.testids)
+                this.testResults = []
+                this.updateTestDetails()
+            }).catch(err => {
+                Message.error("获取评测信息失败")
+                console.log(err)
+            })
+        },
+        updateTestDetails() {
+            var testids_rev = this.testids.reverse()
+            var tmp_results = this.testResults.reverse()
+            var tests_to_update = new Array()
+            var index_to_update = new Array()
+            for (var i = 0; i < testids_rev.length; i++) {
+                if (i >= tmp_results.length || tmp_results[i].running) {
+                    tests_to_update.push(testids_rev[i])
+                    index_to_update.push(i)
+                }
+            }
+            // fetch results from backend
+            axios({
+                method: "post",
+                url: "http://localhost:1323/student/update-tests",
+                headers: {
+                    'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                },
+                data: tests_to_update,
+            }).then(res => {
+                console.log(res.data)
+                if (res.data.data.result) {
+                    if (res.data.data.result.length !== index_to_update.length) {
+                        Message.error("获取评测信息失败: LENGTH DISMATCH!")
+                        return
+                    }
+                    for (var i = 0; i < index_to_update.length; i++) {
+                        var running = true;
+                        tmp_results[index_to_update[i]] = {
+                            testId: res.data.data.result[i].ID,
+                            name: res.data.data.result[i].Name,
+                            questionId: res.data.data.result[i].QuestionID,
+                            score: res.data.data.result[i].Score,
+                            totalScore: res.data.data.result[i].TotalScore,
+                            language: res.data.data.result[i].Language,
+                            uploadTime: new Date(Date.parse(res.data.data.result[i].SubmitTime)).format('yyyy-MM-dd hh:mm:ss'),
+                            fileSize: res.data.data.result[i].FileSize,
+                            passSubmission: res.data.data.result[i].PassSubmission,
+                            totalSubmission: res.data.data.result[i].TotalSubmission,
+                            running: false,
+                            testCases: [],
+                        }
+                        res.data.data.result[i].TestCases.forEach(testcase => {
+                            tmp_results[index_to_update[i]].testCases.push({
+                                caseId: testcase.ID,
+                                state: testcase.State,
+                                timeElapsed: testcase.State === "Accepted" ? testcase.TimeElasped : "N/A",
+                                memoryUsage: testcase.State === "Accepted" ? testcase.TimeElasped : "N/A",
+                            })
+                            running = running & (testcase.State !== "Pending" || testcase.State !== "Running")
+                        })
+                        tmp_results[index_to_update[i]].running = running
+                    }
+                    this.testResults = tmp_results.reverse()
+                }
+            }).catch(err => {
+                Message.error("获取评测信息失败")
+                console.log(err)
+            })
+        },
     },
     created() {
         this.fetchAnnouncements()
         this.fetchQuestions()
         this.fetchAssignmentInfo()
+        this.fetchTestIDs()
+        this.timer = window.setInterval(() => {
+            if (this.selectIndex === "2") {
+                setTimeout(this.updateTestDetails, 0);
+            }
+        }, 3000);
+    },
+    destroyed() {
+        clearInterval(this.timer);
+        this.timer = null;
     },
     mounted() {        //写在mounted或者activated生命周期内即可
     }

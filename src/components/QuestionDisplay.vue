@@ -64,7 +64,6 @@
                                 v-model="code" 
                                 :options="options"
                                 ref="myEditor"
-                                @change="codeChangeMethod"
                                 style="font-family: monospace; height: 420px;"
                             ></codemirror>
                         </el-row>
@@ -361,12 +360,13 @@ export default {
                 // }
             })
         },
-        codeChangeMethod() {
-            console.log(this.code, this.mode);
-        },
         // code file functions
         handleCodeFileDownload() {
             console.log("code download", this.code);
+            if (this.code === "") {
+                Message.warning("请编辑代码后再导出！")
+                return
+            }
             let str = new Blob([this.code], {
                 type: 'text/plain; charset=utf-8'
             })
@@ -374,6 +374,10 @@ export default {
         },
         handleCodeSubmit() {
             console.log("code submit", this.code);
+            if (this.code === "") {
+                Message.warning("请编辑代码后再提交！")
+                return
+            }
             let str = new Blob([this.code], {
                 type: 'text/plain; charset=utf-8'
             })
