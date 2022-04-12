@@ -187,7 +187,6 @@ import { mapMutations } from 'vuex';
 import * as XLSX from 'xlsx'
 import axios from "axios"
 import { Message } from "element-ui"
-// TODO: auth login, user database, course list page, hw list page, question list page, test list page
 
 const CourseType = {
   Invalid: 0,
@@ -498,10 +497,10 @@ export default {
               id: course.CourseID,
               name: course.CourseName,
               teacher: course.CourseTeacher,
-              announcements: 0,
-              todoAssignments: 4,
+              announcements: course.CourseAnnounce,
+              todoAssignments: course.CourseAssignments,
               type: course.CourseType,
-              nearestDue: "123",
+              nearestDue: course.NearestDue === "" ? "None" : new Date(Date.parse(course.NearestDue)).format('yyyy-MM-dd hh:mm:ss'),
               time: course.CourseTerm,
             })
           })
