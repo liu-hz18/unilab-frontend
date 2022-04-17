@@ -1,5 +1,5 @@
 <template>
-  <div id="editor">
+  <div id="editor" style="min-width: 1100px;">
     <el-container>
     
       <el-header>

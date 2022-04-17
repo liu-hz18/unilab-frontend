@@ -1,7 +1,7 @@
 
 <template>
-  <div id="course">
-    <el-container>
+  <div id="course" style="min-width: 1164px;">
+    <el-container >
       <el-header>
         <el-row :gutter="20" style="background-color: #BBD9F8;">
           <el-col :span="8">
@@ -28,14 +28,14 @@
       <el-container>
         <el-main>
           <el-row>
-            <el-col :span="21">
+            <el-col :span="20">
               <el-input
                 v-model="search"
                 size="medium"
                 placeholder="输入关键字搜索"
               />
             </el-col>
-            <el-col :span="3">
+            <el-col :span="3" v-if="!isStudent()">
               <el-button type="text" @click="dialogFormVisible = true">
                 <i class="el-icon-circle-plus-outline"></i>&nbsp;新建课程
               </el-button>
@@ -110,72 +110,74 @@
         </el-aside>
       </el-container>
 
-      <el-dialog title="新建课程" :visible.sync="dialogFormVisible" @close="createCourseDialogClose">
-        <el-form :model="createCourseForm" :rules="createCourseFormRules" ref="createCourseForm" label-width="140px" >
-          <el-form-item label="课程名称" required prop="name">
-            <el-input v-model="createCourseForm.name" autocomplete="off"></el-input>
-          </el-form-item>
-          <el-form-item label="创建者姓名" required prop="creator">
-            <el-input v-model="createCourseForm.creator" autocomplete="off"></el-input>
-          </el-form-item>
-          <el-form-item label="请选择学期" required prop="term">
-            <el-select v-model="createCourseForm.term" filterable style="width: 90%;">
-              <el-option
-                  v-for="term in termAvailable"
-                  :key="term"
-                  :label="term"
-                  :value="term">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="请选择教学人员" required prop="teachers">
-            <el-select v-model="createCourseForm.teachers" placeholder="可多选" multiple filterable reserve-keyword clearable :loading="fetchingTeachers" :loading-text="'Loading...'" @visible-change="teacherSelectorChange" style="width: 90%;">
-              <el-option
-                  v-for="user in teachersAvailable"
-                  :key="user.id"
-                  :label="user.id + '  ' + user.name"
-                  :value="user.id">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="请选择或导入学生 (若导入Excel文件将自动为学生注册账号)" required prop="students">
-            <el-select v-model="createCourseForm.students" placeholder="可多选" multiple filterable reserve-keyword collapse-tags clearable :loading="fetchingUsers" :loading-text="'Loading...'" @visible-change="studentSelectorChange" style="width: 90%;">
-              <el-option
-                  v-for="user in usersAvailable"
-                  :key="user.id"
-                  :label="user.id + '  ' + user.name"
-                  :value="user.id">
-              </el-option>
-            </el-select>
-            <el-upload
-              class="upload-students"
-              drag
-              action=""
-              multiple
-              :limit=10
-              :accept="'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel'"
-              :auto-upload="false"
-              :on-change="handleUploadStudentChange"
-              :on-remove="handleUploadStudentRemove"
-              :on-exceed="handleUploadStudentExceeded"
-              style="margin-top: 3%;">
-              <i class="el-icon-upload"></i>
-              <div class="el-upload__text">上传<b>网络学堂</b>导出的“<b>学生信息.xls</b>”文件。<br>拖到此处，或<em>点击上传</em></div>
-            </el-upload>
-          </el-form-item>
-          <el-form-item label="课程类型" required prop="type">
-            <el-select v-model="createCourseForm.type" placeholder="">
-              <el-option :label="'OJ-based'" :value="1" :key="1"></el-option>
-              <el-option :label="'GitLab-based'" :value="2" :key="2"></el-option>
-              <el-option :label="'System'" :value="3" :key="3"></el-option>
-            </el-select>
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="commitCreateCourseForm('createCourseForm')">确 定</el-button>
-        </div>
-      </el-dialog>
+      <el-scrollbar>
+        <el-dialog v-if="!isStudent()" title="新建课程" :visible.sync="dialogFormVisible" @close="createCourseDialogClose" width="50%" top="10vh" style="min-width: 1100px;">
+          <el-form :model="createCourseForm" :rules="createCourseFormRules" ref="createCourseForm" label-width="140px">
+            <el-form-item label="课程名称" required prop="name">
+              <el-input v-model="createCourseForm.name"></el-input>
+            </el-form-item>
+            <el-form-item label="创建者姓名" required prop="creator">
+              <el-input v-model="createCourseForm.creator"></el-input>
+            </el-form-item>
+            <el-form-item label="请选择学期" required prop="term">
+              <el-select v-model="createCourseForm.term" filterable style="width: 90%;">
+                <el-option
+                    v-for="term in termAvailable"
+                    :key="term"
+                    :label="term"
+                    :value="term">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="请选择教学人员" required prop="teachers">
+              <el-select v-model="createCourseForm.teachers" placeholder="可多选" multiple filterable reserve-keyword clearable :loading="fetchingTeachers" :loading-text="'Loading...'" @visible-change="teacherSelectorChange" style="width: 90%;">
+                <el-option
+                    v-for="user in teachersAvailable"
+                    :key="user.id"
+                    :label="user.id + '  ' + user.name"
+                    :value="user.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="请选择或导入学生 (若导入Excel文件将自动为学生注册账号)" required prop="students">
+              <el-select v-model="createCourseForm.students" placeholder="可多选" multiple filterable reserve-keyword collapse-tags clearable :loading="fetchingUsers" :loading-text="'Loading...'" @visible-change="studentSelectorChange" style="width: 90%;">
+                <el-option
+                    v-for="user in usersAvailable"
+                    :key="user.id"
+                    :label="user.id + '  ' + user.name"
+                    :value="user.id">
+                </el-option>
+              </el-select>
+              <el-upload
+                class="upload-students"
+                drag
+                action=""
+                multiple
+                :limit=10
+                :accept="'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel'"
+                :auto-upload="false"
+                :on-change="handleUploadStudentChange"
+                :on-remove="handleUploadStudentRemove"
+                :on-exceed="handleUploadStudentExceeded"
+                style="margin-top: 3%;">
+                <i class="el-icon-upload"></i>
+                <div class="el-upload__text">上传<b>网络学堂</b>导出的“<b>学生信息.xls</b>”文件。<br>拖到此处，或<em>点击上传</em></div>
+              </el-upload>
+            </el-form-item>
+            <el-form-item label="课程类型" required prop="type">
+              <el-select v-model="createCourseForm.type" placeholder="">
+                <el-option :label="'OJ-based'" :value="1" :key="1"></el-option>
+                <el-option :label="'GitLab-based'" :value="2" :key="2"></el-option>
+                <el-option :label="'System'" :value="3" :key="3"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="commitCreateCourseForm('createCourseForm')">确 定</el-button>
+          </div>
+        </el-dialog>
+      </el-scrollbar>
       
     </el-container>
   </div>
@@ -423,8 +425,8 @@ export default {
     },
     handleLogOut() {
       this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
-      Message.success("退出登录", localStorage.getItem("UserID"))
-      this.$router.push("/login")
+      Message.success("退出登录: 请手动登出GitLab以登出!", localStorage.getItem("UserID"))
+      window.location.href='https://git.tsinghua.edu.cn/';
     },
     studentSelectorChange(open) {
       console.log("studentSelectorChange")
@@ -520,6 +522,9 @@ export default {
       this.dialogFormVisible = false;
       this.fetchingTeachers = true;
       this.fetchingUsers = true;
+    },
+    isStudent() {
+      return (localStorage.getItem("Permission") === "0");
     }
   },
   created() { // before main.js init

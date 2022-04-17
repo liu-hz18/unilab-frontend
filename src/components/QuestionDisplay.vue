@@ -1,5 +1,5 @@
 <template>
-    <div id="questionDisplay">
+    <div id="questionDisplay" style="min-width: 1100px;">
         <el-container>
             <el-header>
                 <el-row>

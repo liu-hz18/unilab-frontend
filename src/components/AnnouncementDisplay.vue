@@ -1,5 +1,5 @@
 <template>
-    <div id="announcementDisplay">
+    <div id="announcementDisplay" style="min-width: 1100px;">
         <el-container>
             <el-header>
                 <el-row>

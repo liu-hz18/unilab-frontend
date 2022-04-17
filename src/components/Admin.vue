@@ -1,5 +1,5 @@
 <template>
-    <div id="admin">
+    <div id="admin" style="min-width: 1100px;">
         <h1 style="font-size: 25px; text-align: center; line-height:1.7;">Admin: 添加教师用户</h1>
         <el-upload
               class="upload-teachers"

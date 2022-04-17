@@ -1,5 +1,5 @@
 <template>
-    <div id="coursepage">
+    <div id="coursepage" style="min-width: 1264px;">
 
         <el-container>
             <el-header>
@@ -12,9 +12,9 @@
                             <el-menu-item index="1">本课程</el-menu-item>
                             <el-menu-item index="2">评测</el-menu-item>
                             <el-menu-item index="3">题库</el-menu-item>
-                            <el-menu-item index="4">发布公告</el-menu-item>
-                            <el-menu-item index="5">发布题目</el-menu-item>
-                            <el-menu-item index="6">发布作业</el-menu-item>
+                            <el-menu-item index="4" v-if="!isStudent()">发布公告</el-menu-item>
+                            <el-menu-item index="5" v-if="!isStudent()">发布题目</el-menu-item>
+                            <el-menu-item index="6" v-if="!isStudent()">发布作业</el-menu-item>
                         </el-menu>
                     </el-col>
                     <el-col :span="3" style="margin-top: 9px;">
@@ -35,7 +35,7 @@
             <!-- course homepage -->
             <el-container v-if="selectIndex=='1'">
                 <!-- course announcements -->
-                <el-aside width="400px">
+                <el-aside width="25%">
                     <el-card class="box-card">
                         <div slot="header" class="clearfix">
                             <span>课程公告</span>
@@ -46,7 +46,7 @@
                     </el-card>
                 </el-aside>
                 <!-- course assignments -->
-                <el-main>
+                <el-main width="75%">
                     <el-collapse v-model="activeNames" @change="handleChange">
                         <el-collapse-item v-for="(assignment, index) in assignmentsInfo" 
                             v-bind:key="index" 
@@ -96,7 +96,7 @@
 
             <!-- test page -->
             <el-container v-else-if="selectIndex=='2'">
-                <el-main style="width: 100%;">
+                <el-main width="100%">
                     <el-input
                         v-model="searchTest"
                         size="medium"
@@ -116,7 +116,7 @@
                                 <el-table :data="props.row.testCases"
                                     stripe
                                     :key="props.row.caseId"
-                                    style="width: 50%; margin-left: 50px;">
+                                    style="width: 60%; margin-left: 50px;">
                                 >
                                     <el-table-column
                                         prop="caseId"
@@ -127,7 +127,7 @@
                                         label="State"
                                         width="150">
                                         <template slot-scope="scope">
-                                            <el-tag :type="scope.row.state == 'Accepted' ? 'success' : ( scope.row.state == 'Compiling' || scope.row.state == 'Running' ? 'warning' : 'danger')" effect="dark" style="width: 120px; text-align: center;">
+                                            <el-tag :type="scope.row.state == 'Accepted' ? 'success' : ( scope.row.state == 'Compiling' || scope.row.state == 'Running' || scope.row.state == 'Pending' ? 'warning' : 'danger')" effect="dark" size="medium" style="width: 90px; text-align: center;">
                                                 {{ scope.row.state }}
                                             </el-tag>
                                         </template>
@@ -157,7 +157,7 @@
                         </el-table-column>
                         <el-table-column
                             label="Score"
-                            width="180">
+                            width="100">
                             <template slot-scope="scope">
                                 <el-tag :type="scope.row.score == scope.row.totalScore ? 'success' : ( scope.row.score >= 0.6*scope.row.totalScore ? 'warning' : 'danger')" effect="dark" style="width: 80px; text-align: center;">
                                     {{ scope.row.score + "/" + scope.row.totalScore }}
@@ -167,17 +167,17 @@
                         <el-table-column
                             prop="uploadTime"
                             label="UploadTime"
-                            width="180">
+                            width="150">
                         </el-table-column>
                         <el-table-column
                             prop="language"
                             label="Language"
-                            width="180">
+                            width="100">
                         </el-table-column>
                         <el-table-column
                             prop="fileSize"
                             label="FileSize"
-                            width="180">
+                            width="100">
                         </el-table-column>
                         <el-table-column
                             label="AC/Submission"
@@ -246,7 +246,7 @@
             </el-container>
 
             <!-- announcements edit and push -->
-            <el-container v-else-if="selectIndex=='4'" style="width: 80%;">
+            <el-container v-else-if="selectIndex=='4' && !isStudent()" style="width: 80%;">
                 <el-main>
                     <el-form :model="announcementForm" ref="announcementForm" :rules="announcementFormRules" :key="updateKey" label-width="80px">
                         <el-form-item label="Title" required prop="title">
@@ -263,7 +263,7 @@
             </el-container>
 
             <!-- question edit and push  -->
-            <el-container v-else-if="selectIndex=='5'">
+            <el-container v-else-if="selectIndex=='5' && !isStudent()">
                 <el-main>
                     <el-form :model="questionForm" ref="questionForm" :rules="questionFormRules" :key="updateKey" label-width="120px">
                         <el-form-item label="Title" required prop="title">
@@ -342,7 +342,7 @@
             </el-container>
 
             <!-- homework edit and push  -->
-            <el-container v-else-if="selectIndex=='6'">
+            <el-container v-else-if="selectIndex=='6' && !isStudent()">
                 <el-main>
                     <el-form ref="assignmentForm" :model="assignmentForm" :rules="assignmentFormRules" :key="updateKey" label-width="100px">
                         <el-form-item label="Title" required prop="title">
@@ -418,8 +418,8 @@ export default {
             username: this.$store.state.UserName || 'unknown',
             courseid: this.initCourseID(),
             courseName: "",
-            activeIndex: this.$route.query.tabindex == null ? '1' : this.$route.query.tabindex, // '1' for later push
-            selectIndex: this.$route.query.tabindex == null ? '1' : this.$route.query.tabindex,
+            activeIndex: this.getIndex(), // '1' for later push
+            selectIndex: this.getIndex(),
             activeNames: [0],
             searchTest: '',
             searchQuestion: '',
@@ -532,6 +532,25 @@ export default {
         handleChange(val) {
             console.log(val);
         },
+        getIndex() {
+            if (this.$route.query.tabindex == null) {
+                return '1'
+            } else if (this.$route.query.tabindex == '0') {
+                this.$router.push({ path: "/home" });
+                return '1'
+            } else if (this.$route.query.tabindex == '1' || this.$route.query.tabindex == '2' || this.$route.query.tabindex == '3') {
+                return this.$route.query.tabindex
+            } else if (this.$route.query.tabindex == '4' || this.$route.query.tabindex == '5' || this.$route.query.tabindex == '6') {
+                if (this.isStudent()) {
+                    this.$router.replace({ path: "/404" });
+                    return '1'
+                } else {
+                    return this.$route.query.tabindex
+                }
+            }
+            this.$router.replace({ path: "/404" });
+            return '1'
+        },
         handleSelect(key, keyPath) {
             console.log(key, keyPath);
             this.selectIndex = key.toString();
@@ -547,8 +566,14 @@ export default {
             } else if (this.selectIndex === "3") {
                 this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
                 this.fetchQuestions()
+            } else if (this.selectIndex === "4" || this.selectIndex === "5" || this.selectIndex === "6") {
+                if (this.isStudent()) {
+                    this.$router.replace({ path: "/404" });
+                } else {
+                    this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
+                }
             } else {
-                this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
+                this.$router.replace({ path: "/404" });
             }
             // WARN: bind a key to force update table to avoid rendering failure
             this.updateKey = key;
@@ -578,7 +603,8 @@ export default {
         },
         handleLogOut() {
             this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
-            this.$router.push("/login")
+            Message.success("退出登录: 请手动登出GitLab以登出!", localStorage.getItem("UserID"))
+            window.location.href='https://git.tsinghua.edu.cn/';
         },
         onAnnouncementSubmit(formName) {
             this.$refs[formName].validate((valid) => {
@@ -1030,6 +1056,9 @@ export default {
                 console.log(err)
             })
         },
+        isStudent() {
+            return (localStorage.getItem("Permission") === "0");
+        }
     },
     created() {
         this.fetchAnnouncements()
