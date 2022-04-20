@@ -53,6 +53,7 @@ import { MarkdownPreview } from 'vue-meditor'
 import { mapMutations } from 'vuex'
 import { Message } from "element-ui"
 import axios from "axios"
+import API from "@/axios/API.js"
 
 export default {
     name: 'UniLabAnnouncementDisplay',
@@ -109,8 +110,8 @@ export default {
             } else {
                 this.courseid = this.$route.query.courseid
                 axios({
-                    method: 'get',
-                    url: "http://localhost:1323/student/fetch-course-name",
+                    method: API.FETCH_COURSE_NAME.method,
+                    url: API.FETCH_COURSE_NAME.url,
                     params: {
                         courseid: this.courseid,
                     },
@@ -147,8 +148,8 @@ export default {
             } else {
                 this.annoid = this.$route.query.annoid
                 axios({
-                    method: 'get',
-                    url: "http://localhost:1323/student/fetch-announcement-detail",
+                    method: API.FETCH_ANNOCE_DETAIL.method,
+                    url: API.FETCH_ANNOCE_DETAIL.url,
                     params: {
                         annoid: this.annoid,
                     },

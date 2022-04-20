@@ -37,19 +37,13 @@ function clearStates(data) {
   }
 }
 
-new Vue({
-  router: router,
-  store: store,
-  render: h => h(App),
-}).$mount('#app')
-
 // 超时设定
 axios.defaults.timeout = 15000
 // 后端根接口
 // `baseURL` will be prepended to `url` unless `url` is absolute.
 // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
 // to methods of that instance.
-axios.defaults.baseURL = "http://localhost:1323"
+axios.defaults.baseURL = "/api"
 
 // 发送拦截器
 // 发送请求时带header中的token
@@ -118,3 +112,8 @@ Date.prototype.format = function(fmt) {
  return fmt; 
 }
 
+new Vue({
+  router: router,
+  store: store,
+  render: h => h(App),
+}).$mount('#app')

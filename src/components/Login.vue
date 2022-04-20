@@ -11,6 +11,7 @@
 import { mapMutations } from 'vuex';
 import axios from "axios"
 import { Message } from "element-ui"
+import API from "@/axios/API.js"
 
 export default {
     name: 'UniLabLogin',
@@ -32,8 +33,8 @@ export default {
         ]),
         login () {
             axios({
-                method: 'get',
-                url: 'http://localhost:1323/login',
+                method: API.LOGIN.method,
+                url: API.LOGIN.url,
             }).then(res => {
                 console.log(res);
                 if (res.status === 200) {

@@ -189,6 +189,7 @@ import { mapMutations } from 'vuex';
 import * as XLSX from 'xlsx'
 import axios from "axios"
 import { Message } from "element-ui"
+import API from "@/axios/API.js"
 
 const CourseType = {
   Invalid: 0,
@@ -398,8 +399,8 @@ export default {
             })
             // 发送数据给后端, json格式
             axios({
-              method: 'post',
-              url: "teacher/create-course",
+              method: API.CREATE_COURSE.method,
+              url: API.CREATE_COURSE.url,
               header:{
                 'Content-Type':'application/json',  //如果写成contentType会报错
               },
@@ -435,8 +436,8 @@ export default {
         console.log("open and fetching")
         // 发送数据给后端, json格式
         axios({
-          method: 'get',
-          url: "teacher/fetch-all-user",
+          method: API.FETCH_ALL_USER.method,
+          url: API.FETCH_ALL_USER.url,
         }).then( res => {
           console.log(res.data)
           res.data.data.result.forEach(user => {
@@ -460,8 +461,8 @@ export default {
         this.createCourseForm.teachers = []
         // 发送数据给后端, json格式
         axios({
-          method: 'get',
-          url: "teacher/fetch-all-teacher",
+          method: API.FETCH_ALL_TEACHER.method,
+          url: API.FETCH_ALL_TEACHER.url,
         }).then( res => {
           console.log(res.data)
           res.data.data.result.forEach(user => {
@@ -482,8 +483,8 @@ export default {
       console.log("fetchUserCourses")
       console.log(axios.defaults.baseURL)
       axios({
-        method: 'get',
-        url: "http://localhost:1323/student/fetch-my-course",
+        method: API.FETCH_USER_COURSE.method,
+        url: API.FETCH_USER_COURSE.url,
         params: {
           id: localStorage.getItem("UserID"),
         },

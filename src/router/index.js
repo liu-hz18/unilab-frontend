@@ -3,7 +3,6 @@ import VueRouter from 'vue-router'
 
 import UniLabAdmin from "../components/Admin.vue"
 import UniLabLogin from "../components/Login.vue"
-import UniLabEditor from "../components/Editor.vue"
 import UniLabHome from "../components/Home.vue"
 import UniLabOJPage from "../components/OJPage.vue"
 import UniLabAnnouncementDisplay from "../components/AnnouncementDisplay.vue"
@@ -11,6 +10,7 @@ import UniLabQuestionDisplay from "../components/QuestionDisplay.vue"
 import UniLab404 from "../components/404.vue"
 import UniLabOsGrade from "../components/OsGradeList.vue"
 import store from "@/store/store"
+import API from "@/axios/API.js"
 import axios from "axios"
 import { Message } from "element-ui"
 
@@ -62,14 +62,6 @@ const router = new VueRouter({
             path: "/os",
             name: "os",
             component: UniLabOsGrade,
-            meta: {
-                permission: AutoritityMap["student"]
-            }
-        },
-        {
-            path: '/editor',
-            name: "Editor",
-            component: UniLabEditor,
             meta: {
                 permission: AutoritityMap["student"]
             }
@@ -127,8 +119,8 @@ router.beforeEach((to, from, next) => {
         let permission = localStorage.getItem('Permission');
         if (token === null || token === '') {
             axios({
-                method: 'get',
-                url: 'http://localhost:1323/login',
+                method: API.LOGIN.method,
+                url: API.LOGIN.url,
             }).then(res => {
                 console.log(res);
                 if (res.status == 200) {

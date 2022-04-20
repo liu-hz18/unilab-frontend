@@ -386,6 +386,7 @@ import { mapMutations } from 'vuex'
 import MarkDownEditor from "./MarkDownEditor.vue"
 import { Message } from "element-ui"
 import axios from "axios"
+import API from "@/axios/API.js"
 const questionDesctriptionContent = "##  题目描述 \n\
 \n\
 ##  输入样例 \n\
@@ -622,8 +623,8 @@ export default {
                     formData.append('courseid', this.courseid)
                     formData.append('file', file);
                     axios({
-                        method: "post",
-                        url: "/teacher/create-announcement",
+                        method: API.CREATE_ANNOCE.method,
+                        url: API.CREATE_ANNOCE.url,
                         headers: {
                             'Content-Type': 'multipart/form-data',
                         },
@@ -741,8 +742,8 @@ export default {
                             formData.append('testcase', testcase.raw)
                         })
                         axios({
-                            method: "post",
-                            url: "/teacher/create-question",
+                            method: API.CREATE_QUESTION.method,
+                            url: API.CREATE_QUESTION.url,
                             headers: {
                                 'Content-Type': 'multipart/form-data',
                             },
@@ -769,8 +770,8 @@ export default {
         fetchAnnouncements() {
             console.log("fetchAnnouncements")
             axios({
-                method: 'get',
-                url: "http://localhost:1323/student/fetch-announcement",
+                method: API.FETCH_ANNOCES.method,
+                url: API.FETCH_ANNOCES.url,
                 params: {
                     courseid: this.courseid,
                 },
@@ -797,8 +798,8 @@ export default {
         fetchQuestions() {
             console.log("fetchQuestions")
             axios({
-                method: "get",
-                url: "http://localhost:1323/student/fetch-question",
+                method: API.FETCH_QUESTIONS.method,
+                url: API.FETCH_QUESTIONS.url,
                 params: {
                     courseid: this.courseid,
                 },
@@ -840,8 +841,8 @@ export default {
             } else {
                 this.courseid = this.$route.query.courseid
                 axios({
-                    method: 'get',
-                    url: "http://localhost:1323/student/fetch-course-name",
+                    method: API.FETCH_COURSE_NAME.method,
+                    url: API.FETCH_COURSE_NAME.url,
                     params: {
                         courseid: this.courseid
                     },
@@ -892,8 +893,8 @@ export default {
                     if (!repeated) {
                         console.log("onAssignmentSubmit submit", data);
                         axios({
-                            method: "post",
-                            url: "/teacher/create-assignment",
+                            method: API.CREATE_ASSIGNMENT.method,
+                            url: API.CREATE_ASSIGNMENT.url,
                             headers: {
                                 'Content-Type': 'application/json',
                             },
@@ -920,8 +921,8 @@ export default {
         fetchAssignmentInfo() {
             console.log("fetchAssignmentInfo")
             axios({
-                method: "get",
-                url: "http://localhost:1323/student/fetch-assignment",
+                method: API.FETCH_ASSIGNMENT.method,
+                url: API.FETCH_ASSIGNMENT.url,
                 params: {
                     courseid: this.courseid,
                 },
@@ -972,8 +973,8 @@ export default {
         fetchTestIDs() {
             console.log("fetchTestIDs")
             axios({
-                method: "get",
-                url: "http://localhost:1323/student/fetch-all-testids",
+                method: API.FETCH_TESTIDS.method,
+                url: API.FETCH_TESTIDS.url,
                 params: {
                     courseid: this.courseid,
                 },
@@ -1009,8 +1010,8 @@ export default {
             }
             // fetch results from backend
             axios({
-                method: "post",
-                url: "http://localhost:1323/student/update-tests",
+                method: API.UPDATE_TESTS.method,
+                url: API.UPDATE_TESTS.url,
                 headers: {
                     'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
                 },

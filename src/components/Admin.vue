@@ -42,6 +42,7 @@
 import * as XLSX from 'xlsx'
 import axios from "axios"
 import { Message } from "element-ui"
+import API from "@/axios/API.js"
 
 export default {
     name: "UniLabAdmin",
@@ -121,9 +122,9 @@ export default {
             console.log(this.teachers)
             if (this.teachers.length > 0) {
                 axios({
-                    method: 'post',
-                    url: "admin/add-teachers",
-                    header:{
+                    method: API.ADD_TEACHERS.method,
+                    url: API.ADD_TEACHERS.url,
+                    header: {
                         'Content-Type':'application/json',  //如果写成contentType会报错
                     },
                     data: this.teachers

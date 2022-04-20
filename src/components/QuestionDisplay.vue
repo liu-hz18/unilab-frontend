@@ -122,6 +122,7 @@ import axios from "axios"
 import saveAs from 'file-saver'
 import { mapMutations } from 'vuex'
 import { Message } from "element-ui"
+import API from "@/axios/API.js"
 
 export default {
     name: 'UniLabQuestionDisplay',
@@ -237,8 +238,8 @@ export default {
             } else {
                 this.courseid = this.$route.query.courseid
                 axios({
-                    method: 'get',
-                    url: "http://localhost:1323/student/fetch-course-name",
+                    method: API.FETCH_COURSE_NAME.method,
+                    url: API.FETCH_COURSE_NAME.url,
                     params: {
                         courseid: this.courseid,
                     },
@@ -275,8 +276,8 @@ export default {
             } else {
                 this.questionID = this.$route.query.id
                 axios({
-                    method: "get",
-                    url: "http://localhost:1323/student/fetch-question-detail",
+                    method: API.FETCH_QUESTION_DETAIL.method,
+                    url: API.FETCH_QUESTION_DETAIL.url,
                     params: {
                         questionid: this.questionID,
                     },
@@ -323,8 +324,8 @@ export default {
             const formData = new FormData();
             formData.append("path", this.appendixPath)
             axios({
-                method: "post",
-                url: "http://localhost:1323/student/fetch-question-appendix",
+                method: API.FETCH_QUESTION_APPENDIX.method,
+                url: API.FETCH_QUESTION_APPENDIX.url,
                 responseType: "blob",
                 data: formData
             }).then(res => {
@@ -391,8 +392,8 @@ export default {
             formData.append('language', this.languageMap[this.mode]);
             formData.append('file', file);
             axios({
-                method: 'post',
-                url: 'http://localhost:1323/student/submit-code',
+                method: API.SUBMIT_CODE.method,
+                url: API.SUBMIT_CODE.url,
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -427,8 +428,8 @@ export default {
                 formData.append('file', element.raw);
             })
             axios({
-                method: 'post',
-                url: 'http://localhost:1323/student/submit-code',
+                method: API.SUBMIT_CODE.method,
+                url: API.SUBMIT_CODE.url,
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

@@ -79,6 +79,7 @@ import ansicolor from "ansicolor"
 import {test} from "@/js/test.js"
 import { Message } from "element-ui"
 import { mapMutations } from 'vuex'
+import API from "@/axios/API.js"
 
 export default{
     name: 'UniLabOsGrade',
@@ -113,8 +114,8 @@ export default{
     },
     mounted() {
         axios({
-            method: 'get',
-            url: 'http://localhost:1323/student/Os/Grade',
+            method: API.OS_GRADE.method,
+            url: API.OS_GRADE.url,
             params: {
                 id: localStorage.getItem("UserID") || ""
             },
