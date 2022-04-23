@@ -1,4 +1,5 @@
 module.exports = {
+  publicPath: "/",
   transpileDependencies: true,
   // `devServer` only work for local development mode
   devServer: {
