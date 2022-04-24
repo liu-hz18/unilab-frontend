@@ -15,11 +15,10 @@ RUN node --version
 WORKDIR $FRONTEND
 
 COPY package.json $FRONTEND
-# COPY package-lock.json $FRONTEND
 RUN npm config set registry https://registry.npm.taobao.org
 RUN npm config set sass_binary_site https://npm.taobao.org/mirrors/node-sass/
-RUN npm install
-RUN npm rebuild node-sass
+RUN npm install -g cnpm --registry=https://registry.npm.taobao.org
+RUN cnpm install --sass_binary_site=https://npm.taobao.org/mirrors/node-sass/
 
 COPY . $FRONTEND
 RUN npm run build
@@ -31,7 +30,6 @@ FROM nginx:latest AS runner
 ENV TZ=Asia/Shanghai
 
 COPY --from=builder /unilab-frontend/dist /usr/share/nginx/html
-COPY ./public/50x.html /usr/share/nginx/html/50x.html
 
 EXPOSE 80
 

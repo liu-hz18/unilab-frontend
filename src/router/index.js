@@ -24,7 +24,7 @@ const AutoritityMap = {
 
 const router = new VueRouter({
     mode: 'history',
-    base: "/",
+    base: process.env.NODE_ENV === 'production' ? process.env.VUE_APP_SRC : "/",
     routes: [
         {
             path: "/admin",
