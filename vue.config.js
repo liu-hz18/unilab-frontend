@@ -1,5 +1,6 @@
 module.exports = {
-  publicPath: "/",
+  publicPath: "/unilab/",
+  // outputDir: "/unilab",
   transpileDependencies: true,
   // `devServer` only work for local development mode
   devServer: {

@@ -24,7 +24,7 @@ const AutoritityMap = {
 
 const router = new VueRouter({
     mode: 'history',
-    base: "/",
+    base: "/unilab/",
     routes: [
         {
             path: "/admin",
