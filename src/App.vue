@@ -1,38 +1,18 @@
 <template>
   <div id="app">
-    <!-- <UniLabEditor/> -->
     <router-view/>
   </div>
 </template>
 
 
 <script>
-// TODO: auth login, user database, course list page, hw list page, question list page, test list page
-// import UniLabEditor from "./components/Editor.vue"
-// import UniLabCourse from "./components/CourseList.vue"
-
 export default {
   name: 'UniLab',
   components: {
-    // UniLabEditor,
-    // UniLabCourse,
-
   },
   data() {
-    return {
-      
-    }
+    return { }
   },
-  computed: {
-    
-  },
-  methods: {
-    
-  },
-  // mounted 在初始化页面完成后，再对dom节点进行相关操作
-  mounted() {
-    
-  }
 }
 </script>
 
@@ -46,4 +26,3 @@ export default {
   margin-top: 0px;
 }
 </style>
-

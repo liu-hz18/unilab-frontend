@@ -11,9 +11,9 @@
                             <el-menu-item index="1">本课程</el-menu-item>
                             <el-menu-item index="2">评测</el-menu-item>
                             <el-menu-item index="3">题库</el-menu-item>
-                            <el-menu-item index="4">发布公告</el-menu-item>
-                            <el-menu-item index="5">发布题目</el-menu-item>
-                            <el-menu-item index="6">发布作业</el-menu-item>
+                            <el-menu-item index="4" v-if="!isStudent()">发布公告</el-menu-item>
+                            <el-menu-item index="5" v-if="!isStudent()">发布题目</el-menu-item>
+                            <el-menu-item index="6" v-if="!isStudent()">发布作业</el-menu-item>
                         </el-menu>
                     </el-col>
                     <el-col :span="3" style="margin-top: 9px;">
@@ -180,11 +180,11 @@ export default {
                 })
                 return this.$route.query.annoid
             }
+        },
+        isStudent() {
+            return (localStorage.getItem("Permission") === "0");
         }
     },
-    created() {
-
-    }
 }
 </script>
 

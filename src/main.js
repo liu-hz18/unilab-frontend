@@ -43,7 +43,7 @@ axios.defaults.timeout = 15000
 // `baseURL` will be prepended to `url` unless `url` is absolute.
 // It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
 // to methods of that instance.
-axios.defaults.baseURL = "/api"
+axios.defaults.baseURL = "/unilab/api"
 
 // 发送拦截器
 // 发送请求时带header中的token
