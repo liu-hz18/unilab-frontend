@@ -105,18 +105,18 @@
                     @row-click="handleGradeListRowClick"
                     style="width: 90%; margin-right: 20px;">
                     <el-table-column
-                        prop="chapterId"
+                        prop="Id"
                         label="ID"
                         width="100"
                         sortable>
                     </el-table-column>
                     <el-table-column
-                        prop="chapterName"
+                        prop="Branch_name"
                         label="Chapter"
                         sortable>
                     </el-table-column>
                     <el-table-column
-                        prop="branchName"
+                        prop="Branch_name"
                         label="branch"
                         sortable>
                     </el-table-column>
@@ -171,7 +171,7 @@
 import { mapMutations } from 'vuex'
 // // import MarkDownEditor from "./MarkDownEditor.vue"
 import { Message } from "element-ui"
-// import axios from "axios"
+import axios from "axios"
 
 export default {
     name: "UniLabOsPage",
@@ -391,7 +391,7 @@ export default {
         // },
         handleGradeListRowClick(row, column, event) {
             console.log(row, row.questionId, row.questionName, column, event);
-            this.$router.push({ path: "/osgradelist", query: { branch: row.branchName } });
+            this.$router.push({ path: "/osgradelist", query: { branch: row.Branch_name } });
         },
         // handleAnnouncementClick(index, announcement) {
         //     console.log(index, announcement);
@@ -402,6 +402,41 @@ export default {
             Message.success("退出登录: 请手动登出GitLab以登出!", localStorage.getItem("UserID"))
             window.location.href='https://git.tsinghua.edu.cn/';
         },
+        fetchGradeList(){
+            axios({
+                method: 'get',
+                url: 'http://localhost:1323/student/Os/Grade',
+                params: {
+                    id: localStorage.getItem("UserID") || "",
+                },
+                headers: {
+                    'Authorization': localStorage.getItem("Authorization") || ""
+                },
+            }).then(res => {
+                this.questionList=res.data.gradeDetails
+                for(const question of this.questionList){
+                    question.score=question.Tests.filter((x)=>x.Passed).length;
+                    question.totalScore=question.Tests.map((x)=>x.Score).reduce((x,y)=>x+y,0);
+                }
+                // this.info.total_score=this.tests.map((x)=>x.Score).reduce((x,y)=>x+y,0);
+                // this.info.n_passed=this.tests.filter((x)=>x.Passed).length;
+                // this.info.n_failed=this.tests.filter((x)=>!x.Passed).length;
+                // this.tests=res.data.tests
+                // this.outputs=res.data.outputs
+                // for(const output of this.outputs){
+                //     output.Content=test(output.Content)
+                //     output.all_spans=ansicolor.parse(output.Content).spans
+                //     for(const idx in output.all_spans){
+                //         output.all_spans[idx].id=idx
+                //     }
+                // }
+                // this.info.total_score=this.tests.map((x)=>x.Score).reduce((x,y)=>x+y,0);
+                // this.info.n_passed=this.tests.filter((x)=>x.Passed).length;
+                // this.info.n_failed=this.tests.filter((x)=>!x.Passed).length;
+            }).catch(function (error) { // 请求失败处理
+                console.log(error);
+            });
+        }
         // onAnnouncementSubmit(formName) {
         //     this.$refs[formName].validate((valid) => {
         //         if (valid) {
@@ -857,6 +892,7 @@ export default {
         // }
     },
     created() {
+        this.fetchGradeList()
         // this.fetchAnnouncements()
         // this.fetchQuestions()
         // this.fetchAssignmentInfo()

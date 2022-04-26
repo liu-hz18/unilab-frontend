@@ -115,7 +115,7 @@ export default{
         var branch=this.$route.query.branch
         axios({
             method: 'get',
-            url: 'http://localhost:1323/student/Os/Grade',
+            url: 'http://localhost:1323/student/Os/BranchGrade',
             params: {
                 id: localStorage.getItem("UserID") || "",
                 branch: branch,
