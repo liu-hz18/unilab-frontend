@@ -10,6 +10,7 @@ import UniLabAnnouncementDisplay from "../components/AnnouncementDisplay.vue"
 import UniLabQuestionDisplay from "../components/QuestionDisplay.vue"
 import UniLab404 from "../components/404.vue"
 import UniLabOsGrade from "../components/OsGradeList.vue"
+import UniLabOsPage from "../components/OsPage.vue"
 import store from "@/store/store"
 import axios from "axios"
 import { Message } from "element-ui"
@@ -61,7 +62,7 @@ const router = new VueRouter({
         {
             path: "/os",
             name: "os",
-            component: UniLabOsGrade,
+            component: UniLabOsPage,
             meta: {
                 permission: AutoritityMap["student"]
             }
@@ -86,6 +87,14 @@ const router = new VueRouter({
             path: "/question",
             name: "question",
             component: UniLabQuestionDisplay,
+            meta: {
+                permission: AutoritityMap["student"]
+            }
+        },
+        {
+            path: "/osgradelist",
+            name: "oagradelist",
+            component: UniLabOsGrade,
             meta: {
                 permission: AutoritityMap["student"]
             }

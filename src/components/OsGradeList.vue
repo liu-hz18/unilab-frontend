@@ -116,7 +116,8 @@ export default{
             method: 'get',
             url: 'http://localhost:1323/student/Os/Grade',
             params: {
-                id: localStorage.getItem("UserID") || ""
+                id: localStorage.getItem("UserID") || "",
+                branch: "ch7"
             },
             headers: {
                 'Authorization': localStorage.getItem("Authorization") || ""
