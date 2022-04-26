@@ -481,7 +481,6 @@ export default {
     },
     fetchUserCourses() {
       console.log("fetchUserCourses")
-      console.log(axios.defaults.baseURL)
       axios({
         method: API.FETCH_USER_COURSE.method,
         url: API.FETCH_USER_COURSE.url,
@@ -509,13 +508,13 @@ export default {
           })
         }
       }).catch(err => {
+        console.log("error:", err)
         if (err.response.status === 401) {
           this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
           Message.error("UNAUTHORIZED: 请重新登录")
-          this.$router.replace("/login")
+          this.$router.push("/login")
         } else {
           Message.error("获取课程列表失败")
-          console.log(err)
         }
       })
     },

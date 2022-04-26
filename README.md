@@ -2,9 +2,18 @@
 
 ## powered by Vue2
 
+## Prepare
+```
+node --version
+python3 --version
+npm config set python python3
+npm config set registry https://registry.npm.taobao.org
+npm install -g cnpm --registry=https://registry.npm.taobao.org
+```
+
 ## Project setup
 ```
-npm install
+cnpm install --sass_binary_site=https://npm.taobao.org/mirrors/node-sass/
 ```
 
 ### Compiles and hot-reloads for development

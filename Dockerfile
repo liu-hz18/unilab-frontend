@@ -21,7 +21,8 @@ RUN npm install -g cnpm --registry=https://registry.npm.taobao.org
 RUN cnpm install --sass_binary_site=https://npm.taobao.org/mirrors/node-sass/
 
 COPY . $FRONTEND
-RUN cnpm run build
+# RUN cnpm run build
+RUN cnpm run report
 RUN apk del build-dependencies
 
 
