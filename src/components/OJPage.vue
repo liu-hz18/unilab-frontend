@@ -1009,53 +1009,55 @@ export default {
                 }
             }
             // fetch results from backend
-            axios({
-                method: API.UPDATE_TESTS.method,
-                url: API.UPDATE_TESTS.url,
-                headers: {
-                    'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
-                },
-                data: tests_to_update,
-            }).then(res => {
-                console.log(res.data)
-                if (res.data.data.result) {
-                    if (res.data.data.result.length !== index_to_update.length) {
-                        Message.error("获取评测信息失败: LENGTH DISMATCH!")
-                        return
-                    }
-                    for (var i = 0; i < index_to_update.length; i++) {
-                        var running = true;
-                        tmp_results[index_to_update[i]] = {
-                            testId: res.data.data.result[i].ID,
-                            name: res.data.data.result[i].Name,
-                            questionId: res.data.data.result[i].QuestionID,
-                            score: res.data.data.result[i].Score,
-                            totalScore: res.data.data.result[i].TotalScore,
-                            language: res.data.data.result[i].Language,
-                            uploadTime: new Date(Date.parse(res.data.data.result[i].SubmitTime)).format('yyyy-MM-dd hh:mm:ss'),
-                            fileSize: res.data.data.result[i].FileSize,
-                            passSubmission: res.data.data.result[i].PassSubmission,
-                            totalSubmission: res.data.data.result[i].TotalSubmission,
-                            running: false,
-                            testCases: [],
+            if (tests_to_update.length > 0) {
+                axios({
+                    method: API.UPDATE_TESTS.method,
+                    url: API.UPDATE_TESTS.url,
+                    headers: {
+                        'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                    },
+                    data: tests_to_update,
+                }).then(res => {
+                    console.log(res.data)
+                    if (res.data.data.result) {
+                        if (res.data.data.result.length !== index_to_update.length) {
+                            Message.error("获取评测信息失败: LENGTH DISMATCH!")
+                            return
                         }
-                        res.data.data.result[i].TestCases.forEach(testcase => {
-                            tmp_results[index_to_update[i]].testCases.push({
-                                caseId: testcase.ID,
-                                state: testcase.State,
-                                timeElapsed: testcase.State === "Accepted" ? testcase.TimeElasped : "N/A",
-                                memoryUsage: testcase.State === "Accepted" ? testcase.TimeElasped : "N/A",
+                        for (var i = 0; i < index_to_update.length; i++) {
+                            var running = true;
+                            tmp_results[index_to_update[i]] = {
+                                testId: res.data.data.result[i].ID,
+                                name: res.data.data.result[i].Name,
+                                questionId: res.data.data.result[i].QuestionID,
+                                score: res.data.data.result[i].Score,
+                                totalScore: res.data.data.result[i].TotalScore,
+                                language: res.data.data.result[i].Language,
+                                uploadTime: new Date(Date.parse(res.data.data.result[i].SubmitTime)).format('yyyy-MM-dd hh:mm:ss'),
+                                fileSize: res.data.data.result[i].FileSize,
+                                passSubmission: res.data.data.result[i].PassSubmission,
+                                totalSubmission: res.data.data.result[i].TotalSubmission,
+                                running: false,
+                                testCases: [],
+                            }
+                            res.data.data.result[i].TestCases.forEach(testcase => {
+                                tmp_results[index_to_update[i]].testCases.push({
+                                    caseId: testcase.ID,
+                                    state: testcase.State,
+                                    timeElapsed: (testcase.State === "Accepted" || testcase.State === "WrongAnswer") ? testcase.TimeElasped : "N/A",
+                                    memoryUsage: (testcase.State === "Accepted" || testcase.State === "WrongAnswer") ? testcase.MemoryUsage : "N/A",
+                                })
+                                running = running && (testcase.State === "Pending" || testcase.State === "Running")
                             })
-                            running = running & (testcase.State !== "Pending" || testcase.State !== "Running")
-                        })
-                        tmp_results[index_to_update[i]].running = running
+                            tmp_results[index_to_update[i]].running = running
+                        }
+                        this.testResults = tmp_results.reverse()
                     }
-                    this.testResults = tmp_results.reverse()
-                }
-            }).catch(err => {
-                Message.error("获取评测信息失败")
-                console.log(err)
-            })
+                }).catch(err => {
+                    Message.error("获取评测信息失败")
+                    console.log(err)
+                })
+            }
         },
         isStudent() {
             return (localStorage.getItem("Permission") === "0");
