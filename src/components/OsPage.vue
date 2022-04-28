@@ -403,36 +403,45 @@ export default {
             window.location.href='https://git.tsinghua.edu.cn/';
         },
         fetchGradeList(){
+            // axios({
+            //     method: 'get',
+            //     url: 'http://localhost:1323/student/Os/Grade',
+            //     params: {
+            //         id: localStorage.getItem("UserID") || "",
+            //     },
+            //     headers: {
+            //         'Authorization': localStorage.getItem("Authorization") || ""
+            //     },
+            // }).then(res => {
+            //     this.questionList=res.data.gradeDetails
+            //     for(const question of this.questionList){
+            //         question.score=question.Tests.filter((x)=>x.Passed).length;
+            //         question.totalScore=question.Tests.map((x)=>x.Score).reduce((x,y)=>x+y,0);
+            //     }
+            // }).catch(function (error) { // 请求失败处理
+            //     console.log(error);
+            // });
+            const formData = new FormData();
+            formData.append('userid', localStorage.getItem("UserID") || "");
+            formData.append('coursetype', 'CI');
+            formData.append('coursename','OS');
+            var extra = {
+                test:"test",
+            };
+            formData.append('extra',JSON.stringify(extra))
             axios({
-                method: 'get',
-                url: 'http://localhost:1323/student/Os/Grade',
-                params: {
-                    id: localStorage.getItem("UserID") || "",
-                },
+                method: 'post',
+                url: 'http://localhost:1323/student/submit-task',
                 headers: {
-                    'Authorization': localStorage.getItem("Authorization") || ""
+                    'Authorization': localStorage.getItem("Authorization") || "",
                 },
+                data: formData,
             }).then(res => {
                 this.questionList=res.data.gradeDetails
                 for(const question of this.questionList){
                     question.score=question.Tests.filter((x)=>x.Passed).length;
                     question.totalScore=question.Tests.map((x)=>x.Score).reduce((x,y)=>x+y,0);
                 }
-                // this.info.total_score=this.tests.map((x)=>x.Score).reduce((x,y)=>x+y,0);
-                // this.info.n_passed=this.tests.filter((x)=>x.Passed).length;
-                // this.info.n_failed=this.tests.filter((x)=>!x.Passed).length;
-                // this.tests=res.data.tests
-                // this.outputs=res.data.outputs
-                // for(const output of this.outputs){
-                //     output.Content=test(output.Content)
-                //     output.all_spans=ansicolor.parse(output.Content).spans
-                //     for(const idx in output.all_spans){
-                //         output.all_spans[idx].id=idx
-                //     }
-                // }
-                // this.info.total_score=this.tests.map((x)=>x.Score).reduce((x,y)=>x+y,0);
-                // this.info.n_passed=this.tests.filter((x)=>x.Passed).length;
-                // this.info.n_failed=this.tests.filter((x)=>!x.Passed).length;
             }).catch(function (error) { // 请求失败处理
                 console.log(error);
             });
