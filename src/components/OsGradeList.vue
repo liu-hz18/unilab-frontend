@@ -36,6 +36,8 @@
                             </el-table-column>
                             <el-table-column prop="Score" label="得分" align="center">
                             </el-table-column>
+                            <el-table-column prop="Total_score" label="总分" align="center">
+                            </el-table-column>
                         </el-table>
                     </el-collapse-item>
                     <el-collapse-item v-for="output of outputs" :key="output.Id" :title="output.Type">
@@ -133,7 +135,7 @@ export default{
                     output.all_spans[idx].id=idx
                 }
             }
-            this.info.total_score=this.tests.map((x)=>x.Score).reduce((x,y)=>x+y,0);
+            this.info.total_score=this.tests.map((x)=>x.Total_score).reduce((x,y)=>x+y,0);
             this.info.n_passed=this.tests.filter((x)=>x.Passed).length;
             this.info.n_failed=this.tests.filter((x)=>!x.Passed).length;
         }).catch(function (error) { // 请求失败处理
