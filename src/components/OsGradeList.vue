@@ -30,7 +30,7 @@
                             </el-table-column>
                             <el-table-column prop="Passed" label="状态" align="center">
                                 <template slot-scope="scope">
-                                    <el-tag :class="scope.row.Passed === true?'el-icon-success':'el-icon-error'" :type="scope.row.Passed === true? 'success':'danger'">
+                                    <el-tag :class="scope.row.Score === scope.row.Total_score?'el-icon-success':'el-icon-error'" :type="scope.row.Score === scope.row.Total_score? 'success':'danger'">
                                     </el-tag>
                                 </template>
                             </el-table-column>
@@ -40,7 +40,16 @@
                             </el-table-column>
                         </el-table>
                     </el-collapse-item>
-                    <el-collapse-item v-for="output of outputs" :key="output.Id" :title="output.Type">
+                    <!-- <el-collapse-item v-for="output of outputs" :key="output.Id" :title="output.Type">
+                        <pre><span v-for="span of output.all_spans"
+                            :key="`span-${span.id}`"
+                            v-bind:style="span.css"
+                        >{{ span.text }}</span></pre>
+                    </el-collapse-item> -->
+                    <el-collapse-item v-for="output of outputs" :key="output.Id">
+                        <template slot="title">
+                            <b>{{ output.Type }}</b><b class="myb">{{ output.Message }}</b>
+                        </template>
                         <pre><span v-for="span of output.all_spans"
                             :key="`span-${span.id}`"
                             v-bind:style="span.css"
@@ -73,7 +82,14 @@
     font-size: 15px;
     margin-left: 15px;
 }
+::v-deep .myb{
+    padding-left: 10%;
+    font-size: 15px;
+    /* margin-left: 15px; */
+    color:rgb(73, 71, 71);
+}
 </style>
+
 
 <script>
 import axios from "axios"
