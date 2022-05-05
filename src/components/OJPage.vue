@@ -294,7 +294,7 @@
                             <el-select v-model="questionForm.languageSelected" placeholder="C++">
                                 <el-option
                                     v-for="item in languageOptions"
-                                    :key="item.value"
+                                    :key="item.key"
                                     :label="item.label"
                                     :value="item.value">
                                 </el-option>
@@ -435,20 +435,27 @@ export default {
                 markdownContent: ''
             },
             languageOptions: [
-                {value: 'c', label: 'C'},
-                {value: 'c++', label: 'C++'},
-                {value: 'java', label: 'Java'},
-                {value: 'go', label: 'Go'},
-                {value: 'python', label: 'Python'}, 
-                {value: 'javaScript', label: 'JavaScript'}, 
-                {value: 'rust', label: 'Rust'},
+                {key: "c", value: 'c', label: 'C'},
+                {key: "c++11", value: 'c++11', label: 'C++ 11'},
+                {key: "c++14", value: 'c++14', label: 'C++ 14'},
+                {key: "c++17", value: 'c++17', label: 'C++ 17'},
+                {key: "c++20", value: 'c++20', label: 'C++ 20'},
+                {key: "python2", value: 'python2', label: 'Python 2.7'}, 
+                {key: "python3", value: 'python3', label: 'Python 3.10'},
+                {key: "java8", value: 'java8', label: 'Java 8'},
+                {key: "java11", value: 'java11', label: 'Java 11'},
+                {key: "java14", value: 'java14', label: 'Java 14'},
+                {key: "java17", value: 'java17', label: 'Java 17'},
+                {key: "rust", value: 'rust', label: 'Rust'},
+                {key: "go", value: 'go', label: 'Go'},
+                {key: "js", value: 'js', label: 'JavaScript'}, 
             ],
             questionForm: {
                 title: '',
                 tag: '',
                 timeLimit: 1000, // ms
-                memoryLimit: 512, // MB
-                languageSelected: 'c++',
+                memoryLimit: 256, // MB
+                languageSelected: 'c++11',
                 totalScore: 100,
                 markdownContent: questionDesctriptionContent,
                 appendixFiles: [],
@@ -486,7 +493,7 @@ export default {
                     { type: 'number', min: 1, max: 1024, message: "请设置在1MB到1024MB之间", trigger: 'change' },
                 ],
                 languageSelected: [
-                    { required: true, type: 'enum', message: "请输入空间限制", trigger: 'change', enum: ["c", "c++", "java", "go", "python", "javascript", "rust"]},
+                    { required: true, type: 'enum', message: "请输入空间限制", trigger: 'change', enum: ["c", "c++11", "c++14", "c++17", "c++20", "java8", "java11", "java14", "java17", "go", "python2", "python3", "js", "rust"]},
                 ],
                 totalScore: [
                     { required: true, message: "请输入总分", trigger: 'change' },
@@ -1072,7 +1079,7 @@ export default {
             if (this.selectIndex === "2") {
                 setTimeout(this.updateTestDetails, 0);
             }
-        }, 3000);
+        }, 5000);
     },
     destroyed() {
         clearInterval(this.timer);

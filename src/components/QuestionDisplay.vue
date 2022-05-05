@@ -49,10 +49,10 @@
 
                     <el-main>
                         <el-row>
-                            <el-select v-model="mode" placeholder="">
+                            <el-select v-model="language" placeholder="">
                                 <el-option
                                     v-for="item in languageOptions"
-                                    :key="item.value"
+                                    :key="item.key"
                                     :label="item.label"
                                     :value="item.value"
                                     :disabled="item.disabled">
@@ -147,38 +147,38 @@ export default {
             appendixPath: "",
             memoryLimit: 0,
             timeLimit: 0,
+
             language: "",
+            mode: 'text/x-c++src',
+
             creator: "",
             testCaseNum: 0,
 
             code: '',
-            mode: 'text/x-c++src',
             languageOptions: [
-                {value: 'text/x-csrc', label: 'C', disabled: false},
-                {value: 'text/x-c++src', label: 'C++', disabled: false},
-                {value: 'text/x-java', label: 'Java', disabled: false},
-                {value: 'text/x-go', label: 'Go', disabled: false},
-                {value: 'text/x-python', label: 'Python', disabled: false}, 
-                {value: 'text/javascript', label: 'JavaScript', disabled: false}, 
-                {value: 'text/x-rustsrc', label: 'Rust', disabled: false},
+                {key: "c", value: 'c', label: 'C', disabled: false, lint: "text/x-csrc"},
+                {key: "c++11", value: 'c++11', label: 'C++ 11', disabled: false, lint: "text/x-c++src"},
+                {key: "c++14", value: 'c++14', label: 'C++ 14', disabled: false, lint: "text/x-c++src"},
+                {key: "c++17", value: 'c++17', label: 'C++ 17', disabled: false, lint: "text/x-c++src"},
+                {key: "c++20", value: 'c++20', label: 'C++ 20', disabled: false, lint: "text/x-c++src"},
+                {key: "python2", value: 'python2', label: 'Python 2.7', disabled: false, lint: "text/x-python"}, 
+                {key: "python3", value: 'python3', label: 'Python 3.10', disabled: false, lint: "text/x-python"},
+                {key: "java8", value: 'java8', label: 'Java 8', disabled: false, lint: "text/x-java"},
+                {key: "java11", value: 'java11', label: 'Java 11', disabled: false, lint: "text/x-java"},
+                {key: "java14", value: 'java14', label: 'Java 14', disabled: false, lint: "text/x-java"},
+                {key: "java17", value: 'java17', label: 'Java 17', disabled: false, lint: "text/x-java"},
+                {key: "rust", value: 'rust', label: 'Rust', disabled: false, lint: "text/x-rustsrc"},
+                {key: "go", value: 'go', label: 'Go', disabled: false, lint: "text/x-go"},
+                {key: "js", value: 'js', label: 'JavaScript', disabled: false, lint: "text/javascript"},   
             ],
             exportFileNames: {
                 'text/x-csrc': "main.c",
                 'text/x-c++src': "main.cpp",
-                'text/x-java': "main.java",
+                'text/x-java': "Main.java",
                 'text/x-go': "main.go",
                 "text/x-python": "main.py",
                 "text/javascript": "main.js",
-                "text/x-rustsrc": "main.rs"
-            },
-            languageMap: {
-                'text/x-csrc': "c",
-                'text/x-c++src': "c++",
-                'text/x-java': "java",
-                'text/x-go': "go",
-                "text/x-python": "python",
-                "text/javascript": "javascript",
-                "text/x-rustsrc": "rust",
+                "text/x-rustsrc": "main.rs",
             },
             fileList: [],
         }
@@ -292,14 +292,14 @@ export default {
                     this.appendixPath = res.data.data.result.AppendixFile
                     this.memoryLimit = res.data.data.result.MemoryLimit
                     this.timeLimit = res.data.data.result.TimeLimit
-                    this.language = res.data.data.result.Language
+                    this.language = res.data.data.result.Language.toLowerCase()
                     this.creator = res.data.data.result.Creator
                     this.testCaseNum = res.data.data.result.TestCaseNum
                     this.tag = res.data.data.result.Tag
                     this.languageOptions.forEach(language => {
-                        if (language.label.toLowerCase() === this.language.toLowerCase()) {
+                        if (language.key.toLowerCase() === this.language) {
                             language.disabled = false
-                            this.mode = language.value
+                            this.mode = language.lint
                         } else {
                             language.disabled = true
                         }
@@ -389,7 +389,7 @@ export default {
             const formData = new FormData();
             formData.append('courseid', this.courseid);
             formData.append('questionid', this.questionID);
-            formData.append('language', this.languageMap[this.mode]);
+            formData.append('language', this.language);
             formData.append('file', file);
             axios({
                 method: API.SUBMIT_CODE.method,
@@ -418,7 +418,7 @@ export default {
             const formData = new FormData();
             formData.append('courseid', this.courseid);
             formData.append('questionid', this.questionID);
-            formData.append('language', this.languageMap[this.mode]);
+            formData.append('language', this.language);
             this.fileList.forEach(element => {
                 const filesize = element.size / 1024 / 1024;
                 if (filesize > 5.0) {
