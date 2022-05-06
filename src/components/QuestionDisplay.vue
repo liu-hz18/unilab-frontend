@@ -105,24 +105,106 @@
 import { MarkdownPreview } from 'vue-meditor'
 
 import { codemirror } from 'vue-codemirror-lite'
-import 'codemirror/mode/clike/clike.js'
-import 'codemirror/mode/python/python.js'
-import 'codemirror/mode/rust/rust.js'
-import 'codemirror/mode/go/go.js'
+require('codemirror/addon/mode/simple.js')
+require('codemirror/mode/clike/clike.js')
+require('codemirror/mode/python/python.js')
+require('codemirror/mode/go/go.js')
+require('codemirror/mode/rust/rust.js')
+require('codemirror/mode/javascript/javascript.js')
 
-import 'codemirror/addon/hint/show-hint.js'
-import 'codemirror/addon/hint/show-hint.css'
-import 'codemirror/addon/hint/javascript-hint.js'
+require('codemirror/addon/hint/show-hint.js')
+require('codemirror/addon/hint/show-hint.css')
+require('codemirror/addon/hint/javascript-hint.js')
 
-import 'codemirror/addon/selection/active-line'
-import 'codemirror/theme/monokai.css'
-import 'codemirror/theme/3024-day.css'
+require('codemirror/addon/comment/comment.js')
+require('codemirror/addon/selection/active-line.js')
 
 import axios from "axios"
 import saveAs from 'file-saver'
 import { mapMutations } from 'vuex'
 import { Message } from "element-ui"
 import API from "@/axios/API.js"
+import login from "@/axios/login.js"
+
+const CodeGuide = {
+    "none": "",
+    "c": 
+"\
+#include <stdio.h>\n\
+int main(){\n\
+    // your code here...\n\
+    return 0;\n\
+}\n\
+",
+    "c++": 
+"\
+#include <iostream>\n\
+using namespace std;\n\
+int main() {\n\
+    // your code here...\n\
+    return 0;\n\
+}\n\
+",
+    "java": 
+"\
+import java.util.Scanner;\n\
+// 代码中必须存在一个 public class Main, 且不允许出现其他的public class\n\
+public class Main {\n\
+    // 必须以 main 函数为入口 \n\
+    public static void main(String[] args) {\n\
+        Scanner sc = new Scanner(System.in);\n\
+        // your code here...\n\
+        sc.close();\n\
+    }\n\
+}\n\
+",
+    "python2": 
+"\
+// 'a+b' code example\n\
+s = raw_input().split()\n\
+print int(s[0]) + int(s[1])\n\
+",
+    "python3": 
+"\
+// 'a+b' code example\n\
+s = input().split()\n\
+print(int(s[0])+int(s[1]))\n\
+",
+    "go": 
+"\
+// 包名必须为package main\n\
+package main\n\
+import \"fmt\"\n\
+func main() {\n\
+    // 'a+b' code example\n\
+    var a, b int\n\
+    fmt.Scanf(\"%d%d\", &a, &b)\n\
+    fmt.Println(a+b)\n\
+}\n\
+",
+    "rust": 
+"\
+use std::io;\n\
+fn main(){\n\
+    // 'a+b' code example\n\
+    let mut input = String::new();\n\
+    io::stdin().read_line(&mut input).unwrap();\n\
+    let mut s = input.trim().split(' ');\n\
+    let a:i32 = s.next().unwrap().parse().unwrap();\n\
+    let b:i32 = s.next().unwrap().parse().unwrap();\n\
+    println!(\"{}\",a+b);\n\
+}\n\
+",
+    "js":
+"\
+// 'a+b' code example\n\
+const fs = require('fs')\n\
+const data = fs.readFileSync('/dev/stdin')\n\
+const result = data.toString('ascii').trim().split(' ').map(x => parseInt(x)).reduce((a, b) => a + b, 0)\n\
+console.log(result)\n\
+process.exit() // 请注意必须在出口点处加入此行\n\
+",
+}
 
 export default {
     name: 'UniLabQuestionDisplay',
@@ -149,27 +231,28 @@ export default {
             timeLimit: 0,
 
             language: "",
+            languagetype: "none",
             mode: 'text/x-c++src',
 
             creator: "",
             testCaseNum: 0,
 
-            code: '',
+            code: "",
             languageOptions: [
-                {key: "c", value: 'c', label: 'C', disabled: false, lint: "text/x-csrc"},
-                {key: "c++11", value: 'c++11', label: 'C++ 11', disabled: false, lint: "text/x-c++src"},
-                {key: "c++14", value: 'c++14', label: 'C++ 14', disabled: false, lint: "text/x-c++src"},
-                {key: "c++17", value: 'c++17', label: 'C++ 17', disabled: false, lint: "text/x-c++src"},
-                {key: "c++20", value: 'c++20', label: 'C++ 20', disabled: false, lint: "text/x-c++src"},
-                {key: "python2", value: 'python2', label: 'Python 2.7', disabled: false, lint: "text/x-python"}, 
-                {key: "python3", value: 'python3', label: 'Python 3.10', disabled: false, lint: "text/x-python"},
-                {key: "java8", value: 'java8', label: 'Java 8', disabled: false, lint: "text/x-java"},
-                {key: "java11", value: 'java11', label: 'Java 11', disabled: false, lint: "text/x-java"},
-                {key: "java14", value: 'java14', label: 'Java 14', disabled: false, lint: "text/x-java"},
-                {key: "java17", value: 'java17', label: 'Java 17', disabled: false, lint: "text/x-java"},
-                {key: "rust", value: 'rust', label: 'Rust', disabled: false, lint: "text/x-rustsrc"},
-                {key: "go", value: 'go', label: 'Go', disabled: false, lint: "text/x-go"},
-                {key: "js", value: 'js', label: 'JavaScript', disabled: false, lint: "text/javascript"},   
+                {key: "c", value: 'c', label: 'C', disabled: false, lint: "text/x-csrc", type:"c"},
+                {key: "c++11", value: 'c++11', label: 'C++ 11', disabled: false, lint: "text/x-c++src", type:"c++"},
+                {key: "c++14", value: 'c++14', label: 'C++ 14', disabled: false, lint: "text/x-c++src", type:"c++"},
+                {key: "c++17", value: 'c++17', label: 'C++ 17', disabled: false, lint: "text/x-c++src", type:"c++"},
+                {key: "c++20", value: 'c++20', label: 'C++ 20', disabled: false, lint: "text/x-c++src", type:"c++"},
+                {key: "python2", value: 'python2', label: 'Python 2.7', disabled: false, lint: "text/x-python", type:"python2"}, 
+                {key: "python3", value: 'python3', label: 'Python 3.10', disabled: false, lint: "text/x-python", type:"python3"},
+                {key: "java8", value: 'java8', label: 'Java 8', disabled: false, lint: "text/x-java", type:"java"},
+                {key: "java11", value: 'java11', label: 'Java 11', disabled: false, lint: "text/x-java", type:"java"},
+                {key: "java14", value: 'java14', label: 'Java 14', disabled: false, lint: "text/x-java", type:"java"},
+                {key: "java17", value: 'java17', label: 'Java 17', disabled: false, lint: "text/x-java", type:"java"},
+                {key: "rust", value: 'rust', label: 'Rust', disabled: false, lint: "text/x-rustsrc", type:"rust"},
+                {key: "go", value: 'go', label: 'Go', disabled: false, lint: "text/x-go", type:"go"},
+                {key: "js", value: 'js', label: 'JavaScript', disabled: false, lint: "text/javascript", type:"js"},   
             ],
             exportFileNames: {
                 'text/x-csrc': "main.c",
@@ -259,7 +342,8 @@ export default {
                     if (err.response.status === 401) {
                         this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
                         Message.error("UNAUTHORIZED: 请重新登录")
-                        this.$router.replace("/login")
+                        // this.$router.replace("/login")
+                        login();
                     } else {
                         Message.error("获取课程列表失败")
                         console.log(err)
@@ -300,6 +384,8 @@ export default {
                         if (language.key.toLowerCase() === this.language) {
                             language.disabled = false
                             this.mode = language.lint
+                            this.languagetype = language.type
+                            this.code = CodeGuide[this.languagetype]
                         } else {
                             language.disabled = true
                         }
@@ -310,7 +396,8 @@ export default {
                     if (err.response.status === 401) {
                         this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
                         Message.error("UNAUTHORIZED: 请重新登录")
-                        this.$router.replace("/login")
+                        // this.$router.replace("/login")
+                        login();
                     } else {
                         Message.error("获取课程信息失败")
                         console.log(err)
@@ -327,7 +414,7 @@ export default {
                 method: API.FETCH_QUESTION_APPENDIX.method,
                 url: API.FETCH_QUESTION_APPENDIX.url,
                 responseType: "blob",
-                data: formData
+                data: formData,
             }).then(res => {
                 console.log(res.data)
                 let blob = new Blob([res.data], { type: "application/zip" })
@@ -350,15 +437,16 @@ export default {
                 document.body.removeChild(a)
             }).catch(err => {
                 console.log(err)
-                // if (err.response.status === 401) {
-                //     this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
-                //     Message.error("UNAUTHORIZED: 请重新登录")
-                //     this.$router.replace("/login")
-                // } else {
-                //     Message.error("获取附件失败")
-                //     console.log(err)
-                //     this.$router.replace("/404")
-                // }
+                if (err.response.status === 401) {
+                    this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                    Message.error("UNAUTHORIZED: 请重新登录")
+                    // this.$router.replace("/login")
+                    login();
+                } else {
+                    Message.error("获取附件失败")
+                    console.log(err)
+                    this.$router.replace("/404")
+                }
             })
         },
         // code file functions
@@ -463,7 +551,8 @@ export default {
         },
         handleLogOut() {
             this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
-            this.$router.push("/login")
+            // this.$router.push("/login")
+            login();
         },
         isStudent() {
             return (localStorage.getItem("Permission") === "0");

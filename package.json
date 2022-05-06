@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "ansicolor": "^1.1.100",
-    "codemirror": "^5.65.2",
+    "codemirror": "^5.65.3",
     "file-saver": "^2.0.5",
     "less": "^4.1.2",
     "less-loader": "^10.2.0",

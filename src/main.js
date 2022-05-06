@@ -1,14 +1,14 @@
 import Vue from 'vue'
-// import 'es6-promise/auto'
 import ElementUI from 'element-ui'
-import { Message } from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
+import { Message } from 'element-ui'
 
 import App from './App.vue'
 import router from "./router/index.js"
 import store from "./store/store.js"
 import axios from 'axios'
 import { HTTP_STATUS_ERROR_CODE } from './axios/common.js'
+
 
 // 生产模式用于关闭部分开发模式警告
 Vue.config.productionTip = false

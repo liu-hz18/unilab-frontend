@@ -48,8 +48,12 @@ module.exports = {
       vuex: 'Vuex',
       'vue-router': 'VueRouter',
       axios: 'axios',
+      xlsx: 'XLSX',
+      // codemirror: 'CodeMirror',
+      // 'vue-codemirror-lite': 'VueCodeMirror',
+      // 'vue-meditor': 'makdown',
       // echarts: 'echarts',
-      'element-ui': 'ELEMENT'
+      'element-ui': 'ELEMENT',
     }: {}, 
   },
 }

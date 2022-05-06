@@ -54,6 +54,7 @@ import { mapMutations } from 'vuex'
 import { Message } from "element-ui"
 import axios from "axios"
 import API from "@/axios/API.js"
+import login from "@/axios/login.js"
 
 export default {
     name: 'UniLabAnnouncementDisplay',
@@ -93,7 +94,8 @@ export default {
         },
         handleLogOut() {
             this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
-            this.$router.push("/login")
+            login();
+            // this.$router.push("/login")
         },
         isNumber(val){
             var regPos = /^[0-9]+.?[0-9]*/; //判断是否是数字。
@@ -131,7 +133,8 @@ export default {
                     if (err.response.status === 401) {
                         this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
                         Message.error("UNAUTHORIZED: 请重新登录")
-                        this.$router.replace("/login")
+                        // this.$router.replace("/login")
+                        login();
                     } else {
                         Message.error("获取课程列表失败")
                         console.log(err)
@@ -171,7 +174,8 @@ export default {
                     if (err.response.status === 401) {
                         this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
                         Message.error("UNAUTHORIZED: 请重新登录")
-                        this.$router.replace("/login")
+                        // this.$router.replace("/login")
+                        login();
                     } else {
                         Message.error("获取公告信息失败")
                         console.log(err)

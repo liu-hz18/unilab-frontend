@@ -10,11 +10,10 @@ import VueRouter from 'vue-router'
 // import UniLab404 from "../components/404.vue"
 // import UniLabOsGrade from "../components/OsGradeList.vue"
 import store from "@/store/store"
-import API from "@/axios/API.js"
-import axios from "axios"
+import login from "@/axios/login.js"
 import { Message } from "element-ui"
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const AutoritityMap = {
     "admin": 2,
@@ -134,21 +133,7 @@ router.beforeEach((to, from, next) => {
         let permission = localStorage.getItem('Permission');
         if (token === null || token === '') {
             console.log("token is none!");
-            axios({
-                method: API.LOGIN.method,
-                url: API.LOGIN.url,
-            }).then(res => {
-                console.log(res);
-                if (res.status == 200) {
-                    window.location.href = res.data.redirect_url
-                    // this.$message.success("登陆成功");
-                } else {
-                    Message.error("登陆失败");
-                }
-            }).catch(function (error) { // 请求失败处理
-                Message.error("登陆失败");
-                console.log(error);
-            });
+            login();
         } else if ( to.meta.permission ) {
             parseInt(permission) >= parseInt(to.meta.permission) ? next() : next("/404");
         } else {

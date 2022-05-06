@@ -83,9 +83,7 @@ import API from "@/axios/API.js"
 
 export default{
     name: 'UniLabOsGrade',
-    components:{
-
-    },
+    components:{ },
     data(){
         return {
             username: (this.$store.state.UserName || 'unknown'),

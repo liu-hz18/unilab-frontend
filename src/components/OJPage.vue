@@ -387,6 +387,7 @@ import MarkDownEditor from "./MarkDownEditor.vue"
 import { Message } from "element-ui"
 import axios from "axios"
 import API from "@/axios/API.js"
+import login from "@/axios/login.js"
 const questionDesctriptionContent = "##  题目描述 \n\
 \n\
 ##  输入样例 \n\
@@ -869,7 +870,8 @@ export default {
                     if (err.response.status === 401) {
                         this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
                         Message.error("UNAUTHORIZED: 请重新登录")
-                        this.$router.replace("/login")
+                        // this.$router.replace("/login")
+                        login();
                     } else {
                         Message.error("获取课程列表失败")
                         console.log(err)

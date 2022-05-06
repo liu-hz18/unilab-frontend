@@ -8,15 +8,14 @@
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <% if (process.env.NODE_ENV === 'production') { %>
-      <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css">
+      <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css"></link>
+      <link rel="stylesheet" href="https://unpkg.com/codemirror@5.65.2/addon/hint/show-hint.css"></link>
+      <link rel="stylesheet" href="https://unpkg.com/codemirror@5.65.2/lib/codemirror.css"></link>
     <% } %>
     <% if (process.env.NODE_ENV === 'production') { %>
+      <!-- see https://unpkg.com/ to get your cdn !  https://unpkg.com/:package@:version/:file -->
       <script src="https://unpkg.com/vue@2.6.14/dist/vue.min.js"></script>
-      <script src="https://unpkg.com/vue-router@3.5.3/dist/vue-router.min.js"></script>
-      <script src="https://unpkg.com/vuex@3.6.2/dist/vuex.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.26.1/axios.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.js"></script>
-      <script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
+      <script src="https://unpkg.com/axios@0.26.1/dist/axios.min.js"></script>
       <script src="https://unpkg.com/element-ui@2.15.8/lib/index.js"></script>
     <% } %>
     <title><%= htmlWebpackPlugin.options.title %></title>
@@ -25,6 +24,31 @@
     <noscript>
       <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
+    <% if (process.env.NODE_ENV === 'production') { %>
+      <!-- see https://unpkg.com/ to get your cdn !  https://unpkg.com/:package@:version/:file -->
+      <script src="https://unpkg.com/vue-router@3.5.3/dist/vue-router.min.js"></script>
+      <script src="https://unpkg.com/vuex@3.6.2/dist/vuex.min.js"></script>
+      <script src="https://unpkg.com/es6-promise@4.2.8/dist/es6-promise.auto.min.js"></script>
+      <script src="https://unpkg.com/xlsx@0.18.5/xlsx.js"></script>
+
+      <!-- <script src="https://unpkg.com/codemirror@5.65.2/lib/codemirror.js"></script>
+      <script src="https://unpkg.com/codemirror@5.65.2/addon/mode/simple.js"></script>
+      <script src="https://unpkg.com/codemirror@5.65.2/addon/hint/show-hint.js"></script>
+      <script src="https://unpkg.com/codemirror@5.65.2/addon/hint/javascript-hint.js"></script>
+      <script src="https://unpkg.com/codemirror@5.65.2/addon/comment/comment.js"></script>
+      <script src="https://unpkg.com/codemirror@5.65.2/addon/selection/active-line.js"></script>
+      <script src="https://unpkg.com/codemirror@5.65.2/mode/clike/clike.js"></script>
+      <script src="https://unpkg.com/codemirror@5.65.2/mode/python/python.js"></script>
+      <script src="https://unpkg.com/codemirror@5.65.2/mode/go/go.js"></script>
+      <script src="https://unpkg.com/codemirror@5.65.2/mode/rust/rust.js"></script>
+      <script src="https://unpkg.com/codemirror@5.65.2/mode/javascript/javascript.js"></script> -->
+
+      <!-- <script src="https://unpkg.com/vue-meditor@2.1.1/dist/preview.js"></script> -->
+      <!-- <script src="https://unpkg.com/vue-meditor@2.1.1/dist/pro.js"></script> -->
+      <!-- <script src="https://unpkg.com/vue-meditor@2.1.1/dist/simple.js"></script> -->
+      <!-- <script src="https://unpkg.com/vue-meditor@2.1.1/dist/index.js"></script> -->
+      <!-- <script src="https://unpkg.com/vue-codemirror-lite@1.0.4/dist/vuecodemirror.min.js"></script> -->
+    <% } %>
     <div id="app"></div>
     <!-- built files will be auto injected -->
   </body>
