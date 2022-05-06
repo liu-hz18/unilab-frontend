@@ -1,14 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-// import UniLabAdmin from "../components/Admin.vue"
-// import UniLabLogin from "../components/Login.vue"
-// import UniLabHome from "../components/Home.vue"
-// import UniLabOJPage from "../components/OJPage.vue"
-// import UniLabAnnouncementDisplay from "../components/AnnouncementDisplay.vue"
-// import UniLabQuestionDisplay from "../components/QuestionDisplay.vue"
-// import UniLab404 from "../components/404.vue"
-// import UniLabOsGrade from "../components/OsGradeList.vue"
 import store from "@/store/store"
 import login from "@/axios/login"
 import { Message } from "element-ui"
@@ -53,20 +45,12 @@ const router = new VueRouter({
                 permission: AutoritityMap["student"]
             }
         },
+        // oj related pages
         {
             path: "/ojlab",
             name: "ojlab",
             // component: UniLabOJPage,
             component: resolve => require(["../components/OJPage.vue"], resolve),
-            meta: {
-                permission: AutoritityMap["student"]
-            }
-        },
-        {
-            path: "/os",
-            name: "os",
-            // component: UniLabOsGrade,
-            component: resolve => require(["../components/OsGradeList.vue"], resolve),
             meta: {
                 permission: AutoritityMap["student"]
             }
@@ -89,6 +73,26 @@ const router = new VueRouter({
                 permission: AutoritityMap["student"]
             }
         },
+        {
+            path: "/os",
+            name: "os",
+            // component: UniLabOsPage,
+            component: resolve => require(["../components/OsPage.vue"], resolve),
+            meta: {
+                permission: AutoritityMap["student"]
+            }
+        },
+        // os related pages
+        {
+            path: "/osgradelist",
+            name: "oagradelist",
+            // component: UniLabOsGrade,
+            component: resolve => require(["../components/OsGradeList.vue"], resolve),
+            meta: {
+                permission: AutoritityMap["student"]
+            }
+        },
+        // 404s
         {
             path: "/404",
             name: "NotFound",

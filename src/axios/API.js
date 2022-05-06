@@ -78,10 +78,18 @@ const API = {
         method: "get",
         url: "/student/fetch-my-course"
     },
-    
+    // os apis
     OS_GRADE: {
         method: "get",
         url: "/student/Os/Grade"
-    }
+    },
+    OS_BRANCH_GRADE: {
+        method: "get",
+        url: "/student/Os/BranchGrade",
+    },
+    SUBMIT_TASK: {
+        method: "post",
+        url: "/student/submit-task",
+    },
 }
 export default API;

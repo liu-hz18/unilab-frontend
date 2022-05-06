@@ -30,15 +30,26 @@
                             </el-table-column>
                             <el-table-column prop="Passed" label="状态" align="center">
                                 <template slot-scope="scope">
-                                    <el-tag :class="scope.row.Passed === true?'el-icon-success':'el-icon-error'" :type="scope.row.Passed === true? 'success':'danger'">
+                                    <el-tag :class="scope.row.Score === scope.row.Total_score?'el-icon-success':'el-icon-error'" :type="scope.row.Score === scope.row.Total_score? 'success':'danger'">
                                     </el-tag>
                                 </template>
                             </el-table-column>
                             <el-table-column prop="Score" label="得分" align="center">
                             </el-table-column>
+                            <el-table-column prop="Total_score" label="总分" align="center">
+                            </el-table-column>
                         </el-table>
                     </el-collapse-item>
-                    <el-collapse-item v-for="output of outputs" :key="output.Id" :title="output.Type">
+                    <!-- <el-collapse-item v-for="output of outputs" :key="output.Id" :title="output.Type">
+                        <pre><span v-for="span of output.all_spans"
+                            :key="`span-${span.id}`"
+                            v-bind:style="span.css"
+                        >{{ span.text }}</span></pre>
+                    </el-collapse-item> -->
+                    <el-collapse-item v-for="output of outputs" :key="output.Id">
+                        <template slot="title">
+                            <b>{{ output.Type }}</b><b class="myb">{{ output.Message }}</b>
+                        </template>
                         <pre><span v-for="span of output.all_spans"
                             :key="`span-${span.id}`"
                             v-bind:style="span.css"
@@ -64,14 +75,6 @@
         </el-container>
     </div>
 </template>
-
-<style scoped>
-::v-deep .el-collapse-item__header{
-    padding-left: 20px;
-    font-size: 15px;
-    margin-left: 15px;
-}
-</style>
 
 <script>
 import axios from "axios"
@@ -111,11 +114,13 @@ export default{
         },
     },
     mounted() {
+        var branch = this.$route.query.branch
         axios({
-            method: API.OS_GRADE.method,
-            url: API.OS_GRADE.url,
+            method: API.OS_BRANCH_GRADE.method,
+            url: API.OS_BRANCH_GRADE.url,
             params: {
-                id: localStorage.getItem("UserID") || ""
+                id: localStorage.getItem("UserID") || "",
+                branch: branch
             },
             headers: {
                 'Authorization': localStorage.getItem("Authorization") || ""
@@ -130,7 +135,7 @@ export default{
                     output.all_spans[idx].id=idx
                 }
             }
-            this.info.total_score=this.tests.map((x)=>x.Score).reduce((x,y)=>x+y,0);
+            this.info.total_score=this.tests.map((x)=>x.Total_score).reduce((x,y)=>x+y,0);
             this.info.n_passed=this.tests.filter((x)=>x.Passed).length;
             this.info.n_failed=this.tests.filter((x)=>!x.Passed).length;
         }).catch(function (error) { // 请求失败处理
@@ -139,3 +144,17 @@ export default{
     }
 }
 </script>
+
+<style scoped>
+::v-deep .el-collapse-item__header{
+    padding-left: 20px;
+    font-size: 15px;
+    margin-left: 15px;
+}
+::v-deep .myb{
+    padding-left: 10%;
+    font-size: 15px;
+    /* margin-left: 15px; */
+    color:rgb(73, 71, 71);
+}
+</style>
