@@ -2,7 +2,7 @@ import axios from "axios"
 import { Message } from "element-ui"
 import API from "./API.js"
 
-function login() {
+export default function login() {
     axios({
         method: API.LOGIN.method,
         url: API.LOGIN.url,
@@ -21,4 +21,3 @@ function login() {
     });
 }
 
-export default { login };

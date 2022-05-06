@@ -84,4 +84,4 @@ const API = {
         url: "/student/Os/Grade"
     }
 }
-export default API
+export default API;

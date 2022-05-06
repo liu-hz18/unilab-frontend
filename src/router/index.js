@@ -10,7 +10,7 @@ import VueRouter from 'vue-router'
 // import UniLab404 from "../components/404.vue"
 // import UniLabOsGrade from "../components/OsGradeList.vue"
 import store from "@/store/store"
-import login from "@/axios/login.js"
+import login from "@/axios/login"
 import { Message } from "element-ui"
 
 Vue.use(VueRouter);
