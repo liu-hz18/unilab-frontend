@@ -41,7 +41,9 @@
                             <el-main>
                                 <h4 style="font-size: 14px; text-align: center; line-height:1.0; color=#909399;">Time: {{ issueTime }} &nbsp;&nbsp; Creator: {{ creator }}</h4>
                                 <h4 style="font-size: 14px; text-align: center; line-height:1.0; color=#909399;">Tag: {{ tag }}</h4>
+                                <div class="detaildisplay">
                                 <MarkdownPreview v-bind:initialValue="content" theme="oneDark"/>
+                                </div>
                                 <el-button type="text" icon="el-icon-download" @click="downloadAppendix" v-if="appendixPath!==''">点击下载附件</el-button>
                             </el-main>
                         </el-container>
@@ -59,14 +61,16 @@
                                 </el-option>
                             </el-select>
                         </el-row>
-                        <el-row>
-                            <codemirror 
-                                v-model="code" 
-                                :options="options"
-                                ref="myEditor"
-                                style="font-family: monospace; height: 420px;"
-                            ></codemirror>
-                        </el-row>
+                        <div class="unilabeditor">
+                            <el-row>
+                                <codemirror
+                                    v-model="code" 
+                                    :options="options"
+                                    ref="myEditor"
+                                    style="font-family: monospace; height: 420px;"
+                                ></codemirror>
+                            </el-row>
+                        </div>
                         <el-row>
                             <el-button type="success" round size="small" icon="el-icon-magic-stick" @click="handleCodeSubmit">提交代码</el-button>
                             <el-button style="margin-left: 10px;" round size="small" type="primary" icon="el-icon-download" @click="handleCodeFileDownload">导出代码</el-button>
@@ -118,6 +122,20 @@ require('codemirror/addon/hint/javascript-hint.js')
 
 require('codemirror/addon/comment/comment.js')
 require('codemirror/addon/selection/active-line.js')
+
+require('codemirror/addon/fold/foldgutter.css')
+require('codemirror/addon/fold/foldcode')
+require('codemirror/addon/fold/foldgutter')
+require('codemirror/addon/fold/brace-fold')
+require('codemirror/addon/fold/comment-fold')
+require('codemirror/addon/fold/markdown-fold')
+require('codemirror/addon/fold/xml-fold')
+require('codemirror/addon/fold/indent-fold')
+
+require('codemirror/addon/search/match-highlighter')
+
+require('codemirror/addon/edit/matchbrackets')
+require('codemirror/addon/edit/closebrackets')
 
 import axios from "axios"
 import saveAs from 'file-saver'
@@ -277,7 +295,7 @@ export default {
                 tabSize: 4,
                 indentUnit: 4,
                 lineNumbers: true,
-                lineWrapping: true,
+                lineWrapping: false,
                 viewportMargin: Infinity,
                 extraKeys: {
                     'Ctrl-Space': 'autocomplete',
@@ -288,6 +306,22 @@ export default {
                 },
                 autoRefresh: true,
                 styleActiveLine: true,
+                // 代码折叠
+                gutters: [
+                    "CodeMirror-lint-markers",
+                    "CodeMirror-linenumbers",
+                    "CodeMirror-foldgutter"
+                ],
+                foldGutter: true, // 启用行槽中的代码折叠
+                // 选中的单词相同均高亮  
+                highlightSelectionMatches: {
+                    minChars: 2,
+                    trim: true,
+                    style: "matchhighlight",
+                    showToken: false,
+                },
+                autoCloseBrackets: true, // 自动闭合符号
+                matchBrackets: true, // 在光标点击紧挨{、]括号左、右侧时，自动突出显示匹配的括号 }、]
             }
         }
     },
@@ -562,7 +596,7 @@ export default {
 </script>
 
 
-<style scoped lang="less">
+<style lang="less" scoped>
 .display {
     width: 100%;
 }
@@ -572,5 +606,10 @@ export default {
         margin-bottom: 0;
     }
 }
+#detaildisplay .CodeMirror {
+    height: 500px !important;
+}
+#unilabeditor .CodeMirror {
+    height: 420px !important;
+}
 </style>
-

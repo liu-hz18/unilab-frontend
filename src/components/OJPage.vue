@@ -1,5 +1,5 @@
 <template>
-    <div id="coursepage" style="min-width: 1264px;">
+    <div id="coursepage" style="min-width: 1400px;">
 
         <el-container>
             <el-header>
@@ -109,42 +109,7 @@
                         :key="updateKey"
                         row-key="testId"
                         :default-sort = "{prop: 'uploadTime', order: 'descending'}"
-                        @row-click="handleTestQuestionRowClick"
                         style="width: 90%; margin-left: 10px;">
-                        <el-table-column type="expand">
-                            <template slot-scope="props">
-                                <el-table :data="props.row.testCases"
-                                    stripe
-                                    :key="props.row.caseId"
-                                    style="width: 60%; margin-left: 50px;">
-                                >
-                                    <el-table-column
-                                        prop="caseId"
-                                        label="TaskID"
-                                        width="80">
-                                    </el-table-column>
-                                    <el-table-column
-                                        label="State"
-                                        width="150">
-                                        <template slot-scope="scope">
-                                            <el-tag :type="scope.row.state == 'Accepted' ? 'success' : ( scope.row.state == 'Compiling' || scope.row.state == 'Running' || scope.row.state == 'Pending' ? 'warning' : 'danger')" effect="dark" size="medium" style="width: 90px; text-align: center;">
-                                                {{ scope.row.state }}
-                                            </el-tag>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column
-                                        prop="timeElapsed"
-                                        label="timeElapsed(ms)"
-                                        width="150">
-                                    </el-table-column>
-                                    <el-table-column
-                                        prop="memoryUsage"
-                                        label="memoryUsage(KB)"
-                                        width="150">
-                                    </el-table-column>
-                                </el-table>
-                            </template>
-                        </el-table-column>
                         <el-table-column
                             prop="testId"
                             label="QID"
@@ -186,6 +151,22 @@
                                 <div style="width: 80px; text-align: center;">
                                     {{ scope.row.passSubmission + "/" + scope.row.totalSubmission }}
                                 </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="操作">
+                            <template slot-scope="props">
+                                <el-button
+                                    type="success"
+                                    size="medium"
+                                    round
+                                    plain
+                                    @click="handleClickSubmitDetail(props.$index, props.row)">评测详情</el-button>
+                                <el-button
+                                    type="primary"
+                                    size="medium"
+                                    round
+                                    plain
+                                    @click="handleClickQuestionDetail(props.$index, props.row)">查看题目</el-button>
                             </template>
                         </el-table-column>
 
@@ -253,7 +234,9 @@
                             <el-input v-model="announcementForm.title" prop="title"></el-input>
                         </el-form-item>
                         <el-form-item label="Content">
-                            <MarkDownEditor v-model="announcementForm.markdownContent" @markdown-input="announcementDesctriptionChanged"/>
+                            <div class="announcement">
+                                <MarkDownEditor v-model="announcementForm.markdownContent" @markdown-input="announcementDesctriptionChanged"/>
+                            </div>
                         </el-form-item>
                         <el-form-item>
                             <el-button type="primary" @click="onAnnouncementSubmit('announcementForm')">发布公告</el-button>
@@ -301,7 +284,9 @@
                             </el-select>
                         </el-form-item>
                         <el-form-item label="Description" required>
-                            <MarkDownEditor v-model="questionForm.markdownContent" @markdown-input="questionDesctriptionChanged"/>
+                            <div class="question">
+                                <MarkDownEditor v-model="questionForm.markdownContent" @markdown-input="questionDesctriptionChanged"/>
+                            </div>
                         </el-form-item>
                         <el-form-item label="Additional Files">
                             <el-upload
@@ -377,6 +362,91 @@
                 </el-main>
             </el-container>
 
+            <!-- test detail dialog -->
+            <el-scrollbar>
+                <el-dialog title="测试详情" :visible.sync="dialogVisible" width="50%" top="10vh" style="min-width: 1100px;">
+                    <!-- test cases result table -->
+                    <el-table :data="submitDetails.testCases"
+                        stripe
+                        :key="updateKey"
+                        row-key="caseId"
+                        style="width: 90%; margin-left: 10px;">
+                    >
+                        <el-table-column
+                            prop="caseId"
+                            label="TaskID"
+                            width="80">
+                        </el-table-column>
+                        <el-table-column
+                            label="State"
+                            width="150">
+                            <template slot-scope="scope">
+                                <el-tag :type="scope.row.state == 'Accepted' ? 'success' : ( scope.row.state == 'Compiling' || scope.row.state == 'Running' || scope.row.state == 'Pending' ? 'warning' : 'danger')" effect="dark" size="medium" style="width: 90px; text-align: center;">
+                                    {{ scope.row.state }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                            prop="timeElapsed"
+                            label="timeElapsed(ms)"
+                            width="150">
+                        </el-table-column>
+                        <el-table-column
+                            prop="memoryUsage"
+                            label="memoryUsage(KB)"
+                            width="150">
+                        </el-table-column>
+                    </el-table>
+
+                    <div class="output">
+                        <!-- compile output -->
+                        <el-row>
+                        <h4 v-if="submitDetails.compileresult !== ''" style="font-size: 14px; text-align: center; line-height:1.0; color=#909399;">Compiler Output</h4>
+                        <codemirror v-if="submitDetails.compileresult !== ''"
+                            v-model="submitDetails.compileresult" 
+                            :options="shellOutputOptions"
+                            ref="compileOutput"
+                            style="font-family: monospace; height: 140px;"
+                        ></codemirror>
+                        </el-row>
+                        
+                        <!-- extra output -->
+                        <el-row>
+                        <h4 v-if="submitDetails.extraresult !== ''" style="font-size: 14px; text-align: center; line-height:1.0; color=#909399;">Judger Output</h4>
+                        <codemirror v-if="submitDetails.extraresult !== ''"
+                            v-model="submitDetails.extraresult" 
+                            :options="shellOutputOptions"
+                            ref="extraOutput"
+                            style="font-family: monospace; height: 140px;"
+                        ></codemirror>
+                        </el-row>
+                    </div>
+
+                    <div class="submitcodes">
+                    <!-- submit files list -->
+                        <el-collapse v-model="activeFiles">
+                            <el-collapse-item v-for="(fileinfo, index) in submitDetails.fileinfos" 
+                                v-bind:key="index" 
+                                    :name="index"
+                                    :title="fileinfo.Name"
+                                style="margin-left: 10px;">
+                                <el-row>
+                                <codemirror v-model="fileinfo.Content" 
+                                    :options="{ mode: fileinfo.Lint, readOnly: true, lineNumbers: true, lineWrapping: false, viewportMargin: Infinity, autoRefresh: true, styleActiveLine: true }"
+                                    ref="extraOutput"
+                                    style="font-family: monospace; height: 300px;"
+                                ></codemirror>
+                                </el-row>
+                            </el-collapse-item>
+                        </el-collapse>
+                    </div>
+
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="dialogVisible = false">关 闭</el-button>
+                    </div>
+                </el-dialog>
+            </el-scrollbar>
+
         </el-container>
     </div>
 </template>
@@ -384,10 +454,20 @@
 <script>
 import { mapMutations } from 'vuex'
 import MarkDownEditor from "./MarkDownEditor.vue"
+import { codemirror } from 'vue-codemirror-lite'
 import { Message } from "element-ui"
 import axios from "axios"
 import API from "@/axios/API.js"
 import login from "@/axios/login.js"
+
+require('codemirror/addon/mode/simple.js')
+require('codemirror/mode/clike/clike.js')
+require('codemirror/mode/python/python.js')
+require('codemirror/mode/go/go.js')
+require('codemirror/mode/rust/rust.js')
+require('codemirror/mode/javascript/javascript.js')
+require('codemirror/addon/selection/active-line.js')
+
 const questionDesctriptionContent = "##  题目描述 \n\
 \n\
 ##  输入样例 \n\
@@ -411,12 +491,13 @@ export default {
     name: "UniLabOJPage",
     components: {
         MarkDownEditor,
+        codemirror,
     },
     data() {
         return {
             // 刷新评测计时器
             timer: null,
-
+            dialogVisible: false,
             username: this.$store.state.UserName || 'unknown',
             courseid: this.initCourseID(),
             courseName: "",
@@ -431,6 +512,13 @@ export default {
             testids: [],
             testResults: [],
             questionList: [],
+            submitDetails: {
+                testCases: [],
+                compileresult: "",
+                extraresult: "",
+                fileinfos: [],
+            },
+            activeFiles: [0],
             announcementForm: {
                 title: '',
                 markdownContent: ''
@@ -516,6 +604,17 @@ export default {
 
                 ]
             },
+            shellOutputOptions: {
+                mode: "",
+                tabSize: 4,
+                indentUnit: 4,
+                readOnly: true,
+                lineNumbers: true,
+                lineWrapping: false,
+                viewportMargin: Infinity,
+                autoRefresh: true,
+                styleActiveLine: true,
+            },
         }
     },
     computed: {
@@ -594,9 +693,38 @@ export default {
             console.log("from child", content);
             this.questionForm.markdownContent = content;
         },
-        handleTestQuestionRowClick(row, column, event) {
-            console.log(row, row.id, row.name, column, event);
+        handleClickQuestionDetail(index, row) {
+            console.log(index, row);
             this.$router.push({ path: "/question", query: { id: row.questionId, courseid: this.courseid } });
+        },
+        handleClickSubmitDetail(index, row) {
+            console.log(index, row);
+            // fetch compile info from backend
+            axios({
+                method: API.FETCH_SUBMIT_DETAIL.method,
+                url: API.FETCH_SUBMIT_DETAIL.url,
+                params: {
+                    testid: row.testId,
+                },
+                headers: {
+                    'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                }
+            }).then(res => {
+                console.log(res)
+                if (res.status === 200 && res.data.code === 200) {
+                    this.submitDetails.compileresult = res.data.data.result.Compile
+                    this.submitDetails.extraresult = res.data.data.result.Extra
+                    this.submitDetails.fileinfos = res.data.data.result.Fileinfo
+                    this.submitDetails.testCases = row.testCases
+                    // open a dialog to show datas
+                    this.dialogVisible = true
+                } else {
+                    Message.error("测试详情获取失败")
+                }
+            }).catch(err => {
+                Message.error("测试详情获取失败")
+                console.log(err);
+            })
         },
         handleAssignmentQuestionRowClick(row, column, event) {
             console.log(row, row.questionId, row.questionName, column, event);
@@ -1105,7 +1233,16 @@ export default {
 .clearfix:after {
   clear: both
 }
-.el-table tr {
-  cursor: pointer;
+#output .CodeMirror {
+    height: 140px !important;
+}
+#submitcodes .CodeMirror {
+    height: 300px !important;
+}
+#question .CodeMirror {
+    height: 460px !important;
+}
+#announcement .CodeMirror {
+    height: 460px !important;
 }
 </style>

@@ -74,6 +74,10 @@ const API = {
         method: "post",
         url: "/student/submit-code",
     },
+    FETCH_SUBMIT_DETAIL: {
+        method: "get",
+        url: "/student/fetch-submit-detail",
+    },
     FETCH_USER_COURSE: {
         method: "get",
         url: "/student/fetch-my-course"

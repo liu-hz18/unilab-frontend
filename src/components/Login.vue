@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="login">
     <input type="text" v-model="loginForm.userid" placeholder="学号"/>
     <!-- <input type="text" v-model="loginForm.password" placeholder="密码"/> -->
     <!-- <button @click="login">登录</button> -->

@@ -1,5 +1,5 @@
 <template>
-    <div id="coursepage" style="min-width: 1264px;">
+    <div id="ospage" style="min-width: 1264px;">
         <el-container>
             <el-header>
                 <el-row>

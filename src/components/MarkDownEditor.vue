@@ -9,7 +9,6 @@
 
 
 <script>
-
 import { MarkdownPro } from 'vue-meditor'
 const editor = {}
 
@@ -90,5 +89,8 @@ export default {
     left: 0;
     height: 2px;
     background: green;
+}
+.CodeMirror {
+    height: 460px;
 }
 </style>
