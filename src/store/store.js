@@ -10,6 +10,8 @@ const store = new Vuex.Store({
         UserName: localStorage.getItem('UserName') ? localStorage.getItem('UserName') : '',
         UserID: localStorage.getItem('UserID') ? localStorage.getItem('UserID') : '',
         Permission: localStorage.getItem('Permission') ? localStorage.getItem('Permission') : '',
+        Code: localStorage.getItem('Code') ? localStorage.getItem('Code') : '',
+        Language: localStorage.getItem('Language') ? localStorage.getItem('Language') : '',
     },
     mutations: {
         // 修改token，并将token存入localStorage
@@ -18,6 +20,8 @@ const store = new Vuex.Store({
             state.UserName = user.UserName;
             state.Permission = user.Permission;
             state.UserID = user.UserID;
+            state.Code = localStorage.getItem('Code') ? localStorage.getItem('Code') : '';
+            state.Language = localStorage.getItem('Language') ? localStorage.getItem('Language') : '';
             localStorage.setItem('Authorization', user.Authorization);
             localStorage.setItem('UserName', user.UserName);
             localStorage.setItem('Permission', user.Permission);
@@ -28,10 +32,13 @@ const store = new Vuex.Store({
             state.UserName = "";
             state.Permission = "";
             state.UserID = "";
+            state.Code = "";
             localStorage.removeItem('Authorization')
             localStorage.removeItem('UserName')
             localStorage.removeItem('Permission')
             localStorage.removeItem('UserID')
+            localStorage.removeItem('Code')
+            localStorage.removeItem('Language')
         }
     }
 });

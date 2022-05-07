@@ -1,17 +1,30 @@
 <template>
   <div id="app">
-    <router-view/>
+    <router-view v-if="isRouterAlive"/>
   </div>
 </template>
 
 <script>
 export default {
   name: 'UniLab',
-  components: {
+  provide() {
+    return {
+      reload: this.reload
+    }
   },
   data() {
-    return { }
+    return {
+      isRouterAlive: true,
+    }
   },
+  methods: {
+    reload() {
+      this.isRouterAlive = false;
+      this.$nextTick(function() {
+        this.isRouterAlive = true
+      })
+    }
+  }
 }
 </script>
 

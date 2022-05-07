@@ -47,7 +47,7 @@
                 </el-aside>
                 <!-- course assignments -->
                 <el-main width="75%">
-                    <el-collapse v-model="activeNames" @change="handleChange">
+                    <el-collapse v-model="activeNames">
                         <el-collapse-item v-for="(assignment, index) in assignmentsInfo" 
                             v-bind:key="index" 
                                   :name="index"
@@ -113,40 +113,56 @@
                         <el-table-column
                             prop="testId"
                             label="QID"
-                            width="100">
+                            width="100"
+                            sortable>
                         </el-table-column>
                         <el-table-column
                             prop="name"
                             label="Question"
-                            width="180">
+                            width="180"
+                            sortable>
                         </el-table-column>
                         <el-table-column
                             label="Score"
-                            width="100">
+                            width="100"
+                            sortable
+                            :sort-method="sortByScore">
                             <template slot-scope="scope">
-                                <el-tag :type="scope.row.score == scope.row.totalScore ? 'success' : ( scope.row.score >= 0.6*scope.row.totalScore ? 'warning' : 'danger')" effect="dark" style="width: 80px; text-align: center;">
+                                <el-tag
+                                    v-if="scope.row.running === false"
+                                    :type="scope.row.score == scope.row.totalScore ? 'success' : ( scope.row.score >= 0.6*scope.row.totalScore ? 'warning' : 'danger')" effect="dark" style="width: 80px; text-align: center;">
                                     {{ scope.row.score + "/" + scope.row.totalScore }}
+                                </el-tag>
+                                <el-tag
+                                    v-else
+                                    type="info" effect="dark" style="width: 80px; text-align: center;">
+                                    Pending
                                 </el-tag>
                             </template>
                         </el-table-column>
                         <el-table-column
                             prop="uploadTime"
                             label="UploadTime"
-                            width="150">
+                            width="150"
+                            sortable>
                         </el-table-column>
                         <el-table-column
                             prop="language"
                             label="Language"
-                            width="100">
+                            width="120"
+                            sortable>
                         </el-table-column>
                         <el-table-column
                             prop="fileSize"
                             label="FileSize"
-                            width="100">
+                            width="100"
+                            sortable>
                         </el-table-column>
                         <el-table-column
                             label="AC/Submission"
-                            width="180">
+                            width="180"
+                            sortable
+                            :sort-method="sortByPassRate">
                             <template slot-scope="scope">
                                 <div style="width: 80px; text-align: center;">
                                     {{ scope.row.passSubmission + "/" + scope.row.totalSubmission }}
@@ -188,6 +204,7 @@
                     stripe
                     :key="updateKey"
                     @row-click="handleQuestionRowClick"
+                    :default-sort = "{prop: 'questionId', order: 'descending'}"
                     style="width: 90%; margin-right: 20px;">
                     <el-table-column
                         prop="questionId"
@@ -202,7 +219,9 @@
                     </el-table-column>
                     <el-table-column
                         label="score"
-                        width="100">
+                        width="100"
+                        sortable
+                        :sort-method="sortByScore">
                         <template slot-scope="scope">
                             <el-tag :type="scope.row.score == scope.row.totalScore ? 'success' : ( scope.row.score >= 0.6*scope.row.totalScore ? 'warning' : 'danger')" effect="dark" style="width: 80px; text-align: center;">
                                 {{ scope.row.score + "/" + scope.row.totalScore }}
@@ -210,12 +229,40 @@
                         </template>
                     </el-table-column>
                     <el-table-column
-                        prop="tag"
-                        label="tag"
+                        prop="language"
+                        label="language"
+                        width="120"
                         sortable>
                     </el-table-column>
                     <el-table-column
-                        label="AC/Submission">
+                        prop="tag"
+                        label="tag"
+                        width="150"
+                        sortable>
+                    </el-table-column>
+                    <el-table-column
+                        prop="timeLimit"
+                        label="TimeLimit(ms)"
+                        width="170"
+                        sortable>
+                    </el-table-column>
+                    <el-table-column
+                        prop="memoryLimit"
+                        label="MemoryLimit(MB)"
+                        width="180"
+                        sortable>
+                    </el-table-column>
+                    <el-table-column
+                        prop="testcaseNum"
+                        label="测例个数"
+                        width="100"
+                        sortable>
+                    </el-table-column>
+                    <el-table-column
+                        label="AC/Submission"
+                        width="180"
+                        sortable
+                        :sort-method="sortByPassRate">
                         <template slot-scope="scope">
                             <div style="width: 80px; text-align: center;">
                                 {{ scope.row.passSubmission + "/" + scope.row.totalSubmission }}
@@ -364,13 +411,13 @@
 
             <!-- test detail dialog -->
             <el-scrollbar>
-                <el-dialog title="测试详情" :visible.sync="dialogVisible" width="50%" top="10vh" style="min-width: 1100px;">
+                <el-dialog title="测试详情" :visible.sync="dialogVisible" width="52%" top="5vh" style="min-width: 1100px;">
                     <!-- test cases result table -->
                     <el-table :data="submitDetails.testCases"
                         stripe
                         :key="updateKey"
                         row-key="caseId"
-                        style="width: 90%; margin-left: 10px;">
+                        style="width: 100%;">
                     >
                         <el-table-column
                             prop="caseId"
@@ -381,7 +428,7 @@
                             label="State"
                             width="150">
                             <template slot-scope="scope">
-                                <el-tag :type="scope.row.state == 'Accepted' ? 'success' : ( scope.row.state == 'Compiling' || scope.row.state == 'Running' || scope.row.state == 'Pending' ? 'warning' : 'danger')" effect="dark" size="medium" style="width: 90px; text-align: center;">
+                                <el-tag :type="scope.row.state == 'Accepted' ? 'success' : ( scope.row.state == 'Compiling' || scope.row.state == 'Running' || scope.row.state == 'Pending' ? 'warning' : 'danger')" effect="dark" size="medium" style="width: 120px; text-align: center;">
                                     {{ scope.row.state }}
                                 </el-tag>
                             </template>
@@ -393,7 +440,7 @@
                         </el-table-column>
                         <el-table-column
                             prop="memoryUsage"
-                            label="memoryUsage(KB)"
+                            label="memoryUsage(MB)"
                             width="150">
                         </el-table-column>
                     </el-table>
@@ -424,16 +471,16 @@
 
                     <div class="submitcodes">
                     <!-- submit files list -->
-                        <el-collapse v-model="activeFiles">
+                        <el-collapse v-model="activeFiles" @change="codesPanelChange">
                             <el-collapse-item v-for="(fileinfo, index) in submitDetails.fileinfos" 
-                                v-bind:key="index" 
+                                v-bind:key="index"
                                     :name="index"
                                     :title="fileinfo.Name"
                                 style="margin-left: 10px;">
                                 <el-row>
                                 <codemirror v-model="fileinfo.Content" 
                                     :options="{ mode: fileinfo.Lint, readOnly: true, lineNumbers: true, lineWrapping: false, viewportMargin: Infinity, autoRefresh: true, styleActiveLine: true }"
-                                    ref="extraOutput"
+                                    :ref="'code_' + fileinfo.Name"
                                     style="font-family: monospace; height: 300px;"
                                 ></codemirror>
                                 </el-row>
@@ -493,6 +540,7 @@ export default {
         MarkDownEditor,
         codemirror,
     },
+    inject: ['reload'],
     data() {
         return {
             // 刷新评测计时器
@@ -637,9 +685,6 @@ export default {
         ...mapMutations([
             'CHANGE_LOCALSTORAGE_ON_LOGOUT',
         ]),
-        handleChange(val) {
-            console.log(val);
-        },
         getIndex() {
             if (this.$route.query.tabindex == null) {
                 return '1'
@@ -659,8 +704,7 @@ export default {
             this.$router.replace({ path: "/404" });
             return '1'
         },
-        handleSelect(key, keyPath) {
-            console.log(key, keyPath);
+        handleSelect(key, _keyPath) {
             this.selectIndex = key.toString();
             if (this.selectIndex === "0") {
                 this.$router.push({ path: "/home", query: {  } });
@@ -690,15 +734,32 @@ export default {
             this.announcementForm.markdownContent = content;
         },
         questionDesctriptionChanged(content) {
-            console.log("from child", content);
             this.questionForm.markdownContent = content;
         },
-        handleClickQuestionDetail(index, row) {
-            console.log(index, row);
+        handleClickQuestionDetail(_index, row) {
             this.$router.push({ path: "/question", query: { id: row.questionId, courseid: this.courseid } });
+            this.reload();
         },
-        handleClickSubmitDetail(index, row) {
-            console.log(index, row);
+        codesPanelChange(activeNames) {
+            for (let id of activeNames) {
+                this.$refs["code_" + this.submitDetails.fileinfos[id].Name][0].editor.refresh();
+            }
+        },
+        sortByPassRate(left, right) {
+            if ((left.passSubmission / left.totalSubmission) < (right.passSubmission / right.totalSubmission)) {
+                return 1;
+            } else {
+                return -1;
+            }
+        },
+        sortByScore(left, right) {
+            if ((left.score / left.totalScore) < (right.score / right.totalScore)) {
+                return 1;
+            } else {
+                return -1;
+            }
+        },
+        handleClickSubmitDetail(_index, row) {
             // fetch compile info from backend
             axios({
                 method: API.FETCH_SUBMIT_DETAIL.method,
@@ -726,12 +787,10 @@ export default {
                 console.log(err);
             })
         },
-        handleAssignmentQuestionRowClick(row, column, event) {
-            console.log(row, row.questionId, row.questionName, column, event);
+        handleAssignmentQuestionRowClick(row, _column, _event) {
             this.$router.push({ path: "/question", query: { id: row.questionId, courseid: this.courseid } });
         },
-        handleQuestionRowClick(row, column, event) {
-            console.log(row, row.questionId, row.questionName, column, event);
+        handleQuestionRowClick(row, _column, _event) {
             this.$router.push({ path: "/question", query: { id: row.questionId, courseid: this.courseid } });
         },
         handleAnnouncementClick(index, announcement) {
@@ -851,7 +910,6 @@ export default {
                         }
                         // testcases
                         var testcaseNum = parseInt(this.questionForm.testcaseFiles.length/2)
-                        console.log(testcaseNum)
                         for (var k = 1; k <= testcaseNum; k++) {
                             var valid_in = false
                             var valid_ans = false
@@ -904,7 +962,6 @@ export default {
             })
         },
         fetchAnnouncements() {
-            console.log("fetchAnnouncements")
             axios({
                 method: API.FETCH_ANNOCES.method,
                 url: API.FETCH_ANNOCES.url,
@@ -922,7 +979,7 @@ export default {
                         this.announcementList.push({
                             announcementId: announcement.ID,
                             title: announcement.Title,
-                            issue_time: announcement.IssueTime,
+                            issue_time: new Date(Date.parse(announcement.IssueTime)).format('yyyy-MM-dd hh:mm:ss'),
                         })
                     })
                 }
@@ -932,7 +989,6 @@ export default {
             })
         },
         fetchQuestions() {
-            console.log("fetchQuestions")
             axios({
                 method: API.FETCH_QUESTIONS.method,
                 url: API.FETCH_QUESTIONS.url,
@@ -951,10 +1007,15 @@ export default {
                             questionId: question.ID,
                             questionName: question.Title,
                             tag: question.Tag,
-                            score: 0,
+                            score: question.UserMaxScore,
                             totalScore: question.Score,
+                            timeLimit: question.TimeLimit,
+                            memoryLimit: question.MemoryLimit,
+                            testcaseNum: question.TestCaseNum,
+                            language: question.Language,
                             passSubmission: question.TotalACNum,
                             totalSubmission: question.TotalTestNum,
+                            issueTime: new Date(Date.parse(question.IssueTime)).format('yyyy-MM-dd hh:mm:ss'),
                         })
                     })
                 }
@@ -1108,7 +1169,6 @@ export default {
             })
         },
         fetchTestIDs() {
-            console.log("fetchTestIDs")
             axios({
                 method: API.FETCH_TESTIDS.method,
                 url: API.FETCH_TESTIDS.url,
@@ -1126,7 +1186,7 @@ export default {
                         this.testids.push(parseInt(id))
                     })
                 }
-                console.log(this.testids)
+                this.testids.reverse()
                 this.testResults = []
                 this.updateTestDetails()
             }).catch(err => {
@@ -1135,13 +1195,12 @@ export default {
             })
         },
         updateTestDetails() {
-            var testids_rev = this.testids.reverse()
-            var tmp_results = this.testResults.reverse()
+            var tmp_results = [...this.testResults].reverse()
             var tests_to_update = new Array()
             var index_to_update = new Array()
-            for (var i = 0; i < testids_rev.length; i++) {
-                if (i >= tmp_results.length || tmp_results[i].running) {
-                    tests_to_update.push(testids_rev[i])
+            for (var i = 0; i < this.testids.length; i++) {
+                if (i >= tmp_results.length || (tmp_results[i].running && tmp_results[i].tryTimes <= 15)) {
+                    tests_to_update.push(this.testids[i])
                     index_to_update.push(i)
                 }
             }
@@ -1163,6 +1222,7 @@ export default {
                         }
                         for (var i = 0; i < index_to_update.length; i++) {
                             var running = true;
+                            var updatetimes = tmp_results[index_to_update[i]] ? tmp_results[index_to_update[i]].tryTimes + 1 : 1;
                             tmp_results[index_to_update[i]] = {
                                 testId: res.data.data.result[i].ID,
                                 name: res.data.data.result[i].Name,
@@ -1176,13 +1236,14 @@ export default {
                                 totalSubmission: res.data.data.result[i].TotalSubmission,
                                 running: false,
                                 testCases: [],
+                                tryTimes: updatetimes,
                             }
                             res.data.data.result[i].TestCases.forEach(testcase => {
                                 tmp_results[index_to_update[i]].testCases.push({
                                     caseId: testcase.ID,
                                     state: testcase.State,
                                     timeElapsed: (testcase.State === "Accepted" || testcase.State === "WrongAnswer") ? testcase.TimeElasped : "N/A",
-                                    memoryUsage: (testcase.State === "Accepted" || testcase.State === "WrongAnswer") ? testcase.MemoryUsage : "N/A",
+                                    memoryUsage: (testcase.State === "Accepted" || testcase.State === "WrongAnswer") ? (testcase.MemoryUsage / 1024.0).toFixed(3) : "N/A",
                                 })
                                 running = running && (testcase.State === "Pending" || testcase.State === "Running")
                             })
@@ -1233,16 +1294,16 @@ export default {
 .clearfix:after {
   clear: both
 }
-#output .CodeMirror {
-    height: 140px !important;
+.CodeMirror {
+    height: auto;
 }
-#submitcodes .CodeMirror {
-    height: 300px !important;
-}
-#question .CodeMirror {
-    height: 460px !important;
-}
-#announcement .CodeMirror {
-    height: 460px !important;
+.CodeMirror-sizer {
+    margin-left: 33px !important;
+    margin-bottom: -17px !important;
+    border-right-width: 33px !important;
+    min-height: 53px !important;
+    min-width: 22.4px !important;
+    padding-right: 0px !important;
+    padding-bottom: 0px !important;
 }
 </style>

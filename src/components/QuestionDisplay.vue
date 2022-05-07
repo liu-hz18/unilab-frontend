@@ -1,9 +1,9 @@
 <template>
     <div id="questionDisplay" style="min-width: 1100px;">
         <el-container>
-            <el-header>
+            <el-header style="height: 70px;">
                 <el-row>
-                    <el-col :span="19">
+                    <el-col :span="19" style="margin-top: 0px;">
                         <el-menu :default-active="activeIndex" class="course-menu" mode="horizontal" @select="handleSelect">
                             <el-menu-item index="0">
                                 <i class="el-icon-s-home"></i>Home
@@ -16,12 +16,12 @@
                             <el-menu-item index="6" v-if="!isStudent()">发布作业</el-menu-item>
                         </el-menu>
                     </el-col>
-                    <el-col :span="3" style="margin-top: 9px;">
+                    <el-col :span="3" style="margin-top: 4px;">
                         <div class="grid-content bg-purple">
                         <h2 style="font-size: 16px; text-align: right; line-height:1.5; color: #909399;">Hello {{ username }} !</h2>
                         </div>
                     </el-col>
-                    <el-col :span="1" :offset="1" style="margin-top: 13px;">
+                    <el-col :span="1" :offset="1" style="margin-top: 5px;">
                         <div class="grid-content bg-purple">
                         <el-tooltip class="item" effect="dark" content="退出登录" placement="top-start">
                             <el-button icon="el-icon-switch-button" circle @click="handleLogOut"></el-button>
@@ -39,8 +39,9 @@
                                 <h1 style="font-size: 25px; text-align: center; line-height:1.7;">{{ title }}</h1>
                             </el-header>
                             <el-main>
-                                <h4 style="font-size: 14px; text-align: center; line-height:1.0; color=#909399;">Time: {{ issueTime }} &nbsp;&nbsp; Creator: {{ creator }}</h4>
-                                <h4 style="font-size: 14px; text-align: center; line-height:1.0; color=#909399;">Tag: {{ tag }}</h4>
+                                <h4 style="font-size: 15px; text-align: center; line-height:1.0; color=#909399;">Time: {{ issueTime }} &nbsp;&nbsp; Creator: {{ creator }}</h4>
+                                <h4 style="font-size: 15px; text-align: center; line-height:1.0; color=#909399;">TimeLimit: {{ timeLimit }} ms  &nbsp;&nbsp; MemoryLimit: {{ memoryLimit }} MB</h4>
+                                <h4 style="font-size: 15px; text-align: center; line-height:1.0; color=#909399;">Tag: {{ tag }}</h4>
                                 <div class="detaildisplay">
                                 <MarkdownPreview v-bind:initialValue="content" theme="oneDark"/>
                                 </div>
@@ -51,26 +52,40 @@
 
                     <el-main>
                         <el-row>
-                            <el-select v-model="language" placeholder="">
-                                <el-option
-                                    v-for="item in languageOptions"
-                                    :key="item.key"
-                                    :label="item.label"
-                                    :value="item.value"
-                                    :disabled="item.disabled">
-                                </el-option>
-                            </el-select>
+                            <el-col :span="8">
+                                <div class="grid-content bg-purple">
+                                    <el-select v-model="language" placeholder="">
+                                        <el-option
+                                            v-for="item in languageOptions"
+                                            :key="item.key"
+                                            :label="item.label"
+                                            :value="item.value"
+                                            :disabled="item.disabled">
+                                        </el-option>
+                                    </el-select>
+                                </div>
+                            </el-col>
+                            <el-col :span="2" :offset="13">
+                                <div class="grid-content bg-purple">
+                                    <el-tooltip class="item" effect="dark" content="暂存代码" placement="bottom">
+                                        <el-button icon="el-icon-document-checked" type="primary" circle plain @click="saveLocalCode"></el-button>
+                                    </el-tooltip>
+                                </div>
+                            </el-col>
                         </el-row>
-                        <div class="unilabeditor">
-                            <el-row>
-                                <codemirror
-                                    v-model="code" 
-                                    :options="options"
-                                    ref="myEditor"
-                                    style="font-family: monospace; height: 420px;"
-                                ></codemirror>
-                            </el-row>
-                        </div>
+                        <el-row>
+                            <h4 style="font-size: 15px; text-align: left; line-height:1.0; color=#909399;">{{ this.compileHint }}</h4>
+                        </el-row>
+                        <el-row>
+                            <div class="unilabeditor">
+                            <codemirror
+                                v-model="code" 
+                                :options="options"
+                                ref="myEditor"
+                                style="font-family: monospace; height: 420px;"
+                            ></codemirror>
+                            </div>
+                        </el-row>
                         <el-row>
                             <el-button type="success" round size="small" icon="el-icon-magic-stick" @click="handleCodeSubmit">提交代码</el-button>
                             <el-button style="margin-left: 10px;" round size="small" type="primary" icon="el-icon-download" @click="handleCodeFileDownload">导出代码</el-button>
@@ -104,7 +119,6 @@
     </div>
 </template>
 
-
 <script>
 import { MarkdownPreview } from 'vue-meditor'
 
@@ -124,18 +138,18 @@ require('codemirror/addon/comment/comment.js')
 require('codemirror/addon/selection/active-line.js')
 
 require('codemirror/addon/fold/foldgutter.css')
-require('codemirror/addon/fold/foldcode')
-require('codemirror/addon/fold/foldgutter')
-require('codemirror/addon/fold/brace-fold')
-require('codemirror/addon/fold/comment-fold')
-require('codemirror/addon/fold/markdown-fold')
-require('codemirror/addon/fold/xml-fold')
-require('codemirror/addon/fold/indent-fold')
+require('codemirror/addon/fold/foldcode.js')
+require('codemirror/addon/fold/foldgutter.js')
+require('codemirror/addon/fold/brace-fold.js')
+require('codemirror/addon/fold/comment-fold.js')
+require('codemirror/addon/fold/markdown-fold.js')
+require('codemirror/addon/fold/xml-fold.js')
+require('codemirror/addon/fold/indent-fold.js')
 
-require('codemirror/addon/search/match-highlighter')
+require('codemirror/addon/search/match-highlighter.js')
 
-require('codemirror/addon/edit/matchbrackets')
-require('codemirror/addon/edit/closebrackets')
+require('codemirror/addon/edit/matchbrackets.js')
+require('codemirror/addon/edit/closebrackets.js')
 
 import axios from "axios"
 import saveAs from 'file-saver'
@@ -224,12 +238,31 @@ process.exit() // 请注意必须在出口点处加入此行\n\
 ",
 }
 
+const compileOptions = {
+    "none": "",
+    "c": "gcc main.c -DONLINE_JUDGE -lm -Wall -O2 -o main.exe",
+    "c++11": "g++ main.cpp -DONLINE_JUDGE -lm -Wall -O2 -std=c++11 -o main.exe",
+    "c++14": "g++ main.cpp -DONLINE_JUDGE -lm -Wall -O2 -std=c++14 -o main.exe",
+    "c++17": "g++ main.cpp -DONLINE_JUDGE -lm -Wall -O2 -std=c++17 -o main.exe",
+    "c++20": "g++ main.cpp -DONLINE_JUDGE -lm -Wall -O2 -std=c++20 -o main.exe",
+    "python2": "python2.7 -E -s -B -m py_compile main.py",
+    "python3": "python3.10 -I -B -m py_compile main.py",
+    "java8": "javac -encoding UTF-8 Main.java",
+    "java11": "javac -encoding UTF-8 Main.java",
+    "java14": "javac -encoding UTF-8 Main.java",
+    "java17": "javac -encoding UTF-8 Main.java",
+    "rust": "rustc main.rs -O -o main.exe",
+    "go": "go build -ldflags=\"-s -w\" -o main.exe main.go",
+    "js": "node main.js",
+}
+
 export default {
     name: 'UniLabQuestionDisplay',
     components: {
         MarkdownPreview,
         codemirror,
     },
+    inject: ['reload'],
     data() {
         return {
             activeIndex: '1', // '1' for later push
@@ -323,6 +356,9 @@ export default {
                 autoCloseBrackets: true, // 自动闭合符号
                 matchBrackets: true, // 在光标点击紧挨{、]括号左、右侧时，自动突出显示匹配的括号 }、]
             }
+        },
+        compileHint() {
+            return compileOptions[this.language] ? "编译选项: " + compileOptions[this.language] : "";
         }
     },
     methods: {
@@ -330,13 +366,10 @@ export default {
             'CHANGE_LOCALSTORAGE_ON_LOGOUT',
         ]),
         handleSelect(key, keyPath) {
-            console.log(key, keyPath);
             this.selectIndex = key.toString();
             if (this.selectIndex === "0") {
-                console.log("handleSelect() jump to /home", this.selectIndex);
                 this.$router.push({ path: "/home", query: {  } });
             } else {
-                console.log("handleSelect() jump to /ojlab", this.selectIndex);
                 this.$router.push({ path: "/ojlab", query: { tabindex: this.selectIndex, courseid: this.courseid } });
             }
         },
@@ -419,7 +452,11 @@ export default {
                             language.disabled = false
                             this.mode = language.lint
                             this.languagetype = language.type
-                            this.code = CodeGuide[this.languagetype]
+                            if (this.languagetype === localStorage.getItem('Language')) {
+                                this.code = localStorage.getItem('Code') ? localStorage.getItem('Code') : CodeGuide[this.languagetype];
+                            } else {
+                                this.code = CodeGuide[this.languagetype]
+                            }
                         } else {
                             language.disabled = true
                         }
@@ -485,7 +522,6 @@ export default {
         },
         // code file functions
         handleCodeFileDownload() {
-            console.log("code download", this.code);
             if (this.code === "") {
                 Message.warning("请编辑代码后再导出！")
                 return
@@ -496,7 +532,6 @@ export default {
             saveAs(str, this.exportFileNames[this.mode])
         },
         handleCodeSubmit() {
-            console.log("code submit", this.code);
             if (this.code === "") {
                 Message.warning("请编辑代码后再提交！")
                 return
@@ -533,7 +568,6 @@ export default {
             });
         },
         handleCodeFileUpload() {
-            console.log("file upload", this.fileList);
             if (this.fileList.length <= 0) {
                 return this.$message.warning('请选择文件上传')
             }
@@ -574,7 +608,6 @@ export default {
             this.$message.warning(`当前限制选择 20 个文件，本次共选择了 ${files.length + fileList.length} 个文件`);
         },
         beforeCodeRemove(file) {
-            console.log("beforeRemove", file);
             return this.$confirm(`确定移除 ${ file.name }?`);
         },
         handleCodeFileChange(file, fileList) {
@@ -585,31 +618,43 @@ export default {
         },
         handleLogOut() {
             this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
-            // this.$router.push("/login")
             login();
         },
         isStudent() {
             return (localStorage.getItem("Permission") === "0");
-        }
-    }
+        },
+        saveLocalCode() {
+            localStorage.setItem("Code", this.code)
+            localStorage.setItem("Language", this.languagetype)
+            this.$store.state.Code = this.code
+            this.$store.state.Language = this.languagetype
+        },
+        // Ctrl+S 自动保存
+        keyDownHandler(e) {
+            var key = window.event.keyCode ? window.event.keyCode : window.event.which
+            if (key === 83 && e.ctrlKey) {
+                this.saveLocalCode()
+                e.preventDefault()
+            }
+        },
+    },
+    mounted() {
+        document.addEventListener('keydown', this.keyDownHandler)
+    },
+    beforeDestroy() {
+        document.removeEventListener('keydown', this.keyDownHandler)
+    },
 }
 </script>
 
-
-<style lang="less" scoped>
+<style scoped>
 .display {
     width: 100%;
 }
 .el-row {
-    margin-bottom: 10px;
-    &:last-child {
-        margin-bottom: 0;
-    }
+    margin-top: 10px;
 }
-#detaildisplay .CodeMirror {
-    height: 500px !important;
-}
-#unilabeditor .CodeMirror {
-    height: 420px !important;
+.CodeMirror {
+    height: auto;
 }
 </style>

@@ -20,6 +20,8 @@ RUN npm config set sass_binary_site https://npm.taobao.org/mirrors/node-sass/
 RUN npm install -g cnpm --registry=https://registry.npm.taobao.org
 RUN cnpm install --sass_binary_site=https://npm.taobao.org/mirrors/node-sass/
 
+RUN ls $FRONTEND/node_modules/_codemirror@5.65.3@codemirror -al
+COPY ./third_party/codemirror.css $FRONTEND/node_modules/_codemirror@5.65.3@codemirror/lib/codemirror.css
 COPY . $FRONTEND
 # RUN cnpm run build
 RUN cnpm run report
