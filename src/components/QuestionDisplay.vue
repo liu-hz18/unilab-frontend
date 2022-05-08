@@ -192,13 +192,13 @@ public class Main {\n\
 ",
     "python2": 
 "\
-// 'a+b' code example\n\
+# 'a+b' code example\n\
 s = raw_input().split()\n\
 print int(s[0]) + int(s[1])\n\
 ",
     "python3": 
 "\
-// 'a+b' code example\n\
+# 'a+b' code example\n\
 s = input().split()\n\
 print(int(s[0])+int(s[1]))\n\
 ",
