@@ -34,6 +34,9 @@ ENV TZ=Asia/Shanghai
 
 COPY --from=builder /unilab-frontend/unilab /usr/share/nginx/html/unilab
 RUN chmod -R 777 /usr/share/nginx/html
+COPY --from=builder /unilab-frontend/unilab/index.html /etc/nginx/html/index.html
+COPY --from=builder /unilab-frontend/unilab/50x.html /etc/nginx/html/50x.html
+RUN chmod -R 777 /etc/nginx/html
 
 EXPOSE 80
 

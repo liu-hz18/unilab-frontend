@@ -8,7 +8,7 @@ import router from "./router/index.js"
 import store from "./store/store.js"
 import axios from 'axios'
 import { HTTP_STATUS_ERROR_CODE } from './axios/common.js'
-
+import login from "./axios/login.js"
 
 // 生产模式用于关闭部分开发模式警告
 Vue.config.productionTip = false
@@ -79,6 +79,7 @@ axios.interceptors.response.use(response => {
       case HTTP_STATUS_ERROR_CODE.UNAUTHORIZED:
           clearStates(err.response.data)
           Message.error("UNAUTHORIZED: 请重新登录")
+          login();
           break
       case HTTP_STATUS_ERROR_CODE.FORBIDDEN:
           Message.error("FORBIDDEN: 没有权限")

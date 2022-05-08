@@ -396,7 +396,9 @@ export default {
                   break
                 }
               }
-              tempCreateCourseForm.students.push({id: id, name: name})
+              if (name !== "unknown") {
+                tempCreateCourseForm.students.push({id: id, name: name})
+              }
             })
             // 发送数据给后端, json格式
             axios({

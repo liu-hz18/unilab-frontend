@@ -453,7 +453,7 @@
                             v-model="submitDetails.compileresult" 
                             :options="shellOutputOptions"
                             ref="compileOutput"
-                            style="font-family: monospace; height: 140px;"
+                            style="font-family: monospace; height: 160px;"
                         ></codemirror>
                         </el-row>
                         
@@ -464,7 +464,7 @@
                             v-model="submitDetails.extraresult" 
                             :options="shellOutputOptions"
                             ref="extraOutput"
-                            style="font-family: monospace; height: 140px;"
+                            style="font-family: monospace; height: 160px;"
                         ></codemirror>
                         </el-row>
                     </div>
