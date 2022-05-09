@@ -108,6 +108,7 @@
                         stripe
                         :key="updateKey"
                         row-key="testId"
+                        :cell-style="{padding: '8px 0'}"
                         :default-sort = "{prop: 'uploadTime', order: 'descending'}"
                         style="width: 90%; margin-left: 10px;">
                         <el-table-column
@@ -120,6 +121,7 @@
                             prop="name"
                             label="Question"
                             width="180"
+                            show-overflow-tooltip
                             sortable>
                         </el-table-column>
                         <el-table-column
@@ -173,20 +175,31 @@
                             <template slot-scope="props">
                                 <el-button
                                     type="success"
-                                    size="medium"
+                                    size="small"
                                     round
                                     plain
                                     @click="handleClickSubmitDetail(props.$index, props.row)">评测详情</el-button>
                                 <el-button
                                     type="primary"
-                                    size="medium"
+                                    size="small"
                                     round
                                     plain
                                     @click="handleClickQuestionDetail(props.$index, props.row)">查看题目</el-button>
                             </template>
                         </el-table-column>
-
                     </el-table>
+                    <!-- pagination -->
+                    <div class="testpage-block">
+                        <el-pagination
+                            @current-change="handleTestCurrentChange"
+                            :current-page.sync="testCurrentPage"
+                            :page-size="testPageSize"
+                            layout="total, prev, pager, next"
+                            :total="testTotalNum"
+                            :hide-on-single-page="true"
+                            style="float: left; margin-left: 20px;">
+                        </el-pagination>
+                    </div>
                 </el-main>
             </el-container>
 
@@ -205,7 +218,7 @@
                     :key="updateKey"
                     @row-click="handleQuestionRowClick"
                     :default-sort = "{prop: 'questionId', order: 'descending'}"
-                    style="width: 90%; margin-right: 20px;">
+                    style="width: 90%; margin-left: 10px;">
                     <el-table-column
                         prop="questionId"
                         label="QID"
@@ -215,6 +228,7 @@
                     <el-table-column
                         prop="questionName"
                         label="Question"
+                        show-overflow-tooltip
                         sortable>
                     </el-table-column>
                     <el-table-column
@@ -238,6 +252,7 @@
                         prop="tag"
                         label="tag"
                         width="150"
+                        show-overflow-tooltip
                         sortable>
                     </el-table-column>
                     <el-table-column
@@ -270,7 +285,19 @@
                         </template>
                     </el-table-column>
                 </el-table>
-                </el-main>
+                <!-- pagination -->
+                <div class="questionpage-block">
+                    <el-pagination
+                        @current-change="handleQuestionCurrentChange"
+                        :current-page.sync="questionCurrentPage"
+                        :page-size="questionPageSize"
+                        layout="total, prev, pager, next"
+                        :total="questionTotalNum"
+                        :hide-on-single-page="true"
+                        style="float: left; margin-left: 20px;">
+                    </el-pagination>
+                </div>
+            </el-main>
             </el-container>
 
             <!-- announcements edit and push -->
@@ -557,9 +584,18 @@ export default {
             updateKey: false,
             announcementList: [],
             assignmentsInfo: [],
+
             testids: [],
             testResults: [],
+            testPageSize: 30,
+            testTotalNum: 0,
+            testCurrentPage: 1,
+
             questionList: [],
+            questionPageSize: 30,
+            questionTotalNum: 0,
+            questionCurrentPage: 1,
+            
             submitDetails: {
                 testCases: [],
                 compileresult: "",
@@ -988,12 +1024,18 @@ export default {
                 console.log(err)
             })
         },
+        handleQuestionCurrentChange(curPage) {
+            console.log("当前页: ", curPage);
+            this.fetchQuestions();
+        },
         fetchQuestions() {
             axios({
                 method: API.FETCH_QUESTIONS.method,
                 url: API.FETCH_QUESTIONS.url,
                 params: {
                     courseid: this.courseid,
+                    offset: (this.questionCurrentPage-1)*this.questionPageSize,
+                    limit: this.questionPageSize,
                 },
                 headers: {
                     'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
@@ -1002,7 +1044,8 @@ export default {
                 console.log(res.data)
                 this.questionList = []
                 if (res.data.data.result) {
-                    res.data.data.result.forEach(question => {
+                    this.questionTotalNum = res.data.data.result.totalNum;
+                    res.data.data.result.questions.forEach(question => {
                         this.questionList.push({
                             questionId: question.ID,
                             questionName: question.Title,
@@ -1168,12 +1211,18 @@ export default {
                 console.log(err)
             })
         },
+        handleTestCurrentChange(curPage) {
+            console.log("当前页: ", curPage);
+            this.fetchTestIDs();
+        },
         fetchTestIDs() {
             axios({
                 method: API.FETCH_TESTIDS.method,
                 url: API.FETCH_TESTIDS.url,
                 params: {
                     courseid: this.courseid,
+                    offset: (this.testCurrentPage-1)*this.testPageSize,
+                    limit: this.testPageSize,
                 },
                 headers: {
                     'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
@@ -1182,7 +1231,8 @@ export default {
                 console.log(res)
                 this.testids = []
                 if (res.data.data.result) {
-                    res.data.data.result.forEach(id => {
+                    this.testTotalNum = res.data.data.result.totalNum;
+                    res.data.data.result.testids.forEach(id => {
                         this.testids.push(parseInt(id))
                     })
                 }
