@@ -1249,9 +1249,17 @@ export default {
             var tests_to_update = new Array()
             var index_to_update = new Array()
             for (var i = 0; i < this.testids.length; i++) {
-                if (i >= tmp_results.length || (tmp_results[i].running && tmp_results[i].tryTimes <= 15)) {
+                if (i >= tmp_results.length || (tmp_results[i].running && tmp_results[i].tryTimes <= 12)) {
                     tests_to_update.push(this.testids[i])
                     index_to_update.push(i)
+                } else if (tmp_results[i].running && tmp_results[i].tryTimes > 12) {
+                    this.testResults[this.testResults.length-1-i].running = false
+                    this.testResults[this.testResults.length-1-i].score = 0
+                    this.testResults[this.testResults.length-1-i].testCases.forEach(testcase => {
+                        testcase.timeElapsed = "N/A"
+                        testcase.memoryUsage = "N/A"
+                        testcase.state = "JudgerFailed"
+                    })
                 }
             }
             // fetch results from backend

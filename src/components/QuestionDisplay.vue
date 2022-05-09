@@ -230,11 +230,17 @@ fn main(){\n\
     "js":
 "\
 // 'a+b' code example\n\
-const fs = require('fs')\n\
-const data = fs.readFileSync('/dev/stdin')\n\
-const result = data.toString('ascii').trim().split(' ').map(x => parseInt(x)).reduce((a, b) => a + b, 0)\n\
-console.log(result)\n\
-process.exit() // 请注意必须在出口点处加入此行\n\
+// attention: \n\
+// methods to read stdin like `require('fs').readFileSync('/dev/stdin')` only work on Unix Systems.\n\
+// more generally, if you want to read line by line, use: \n\
+const rl = require('readline').createInterface({ \n\
+        input: process.stdin, \n\
+        output: process.stdout \n\
+}); \n\
+rl.on('line', function(line){ \n\
+   var nums = line.split(' '); \n\
+    console.log(parseInt(nums[0]) + parseInt(nums[1])); \n\
+});\n\
 ",
 }
 
