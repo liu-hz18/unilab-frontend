@@ -585,6 +585,11 @@ export default {
             announcementList: [],
             assignmentsInfo: [],
 
+            fetchedAnnos: false,
+            fetchedAssignments: false,
+            fetchedQuestions: false,
+            fetchedTestIDs: false,
+
             testids: [],
             testResults: [],
             testPageSize: 30,
@@ -727,7 +732,15 @@ export default {
             } else if (this.$route.query.tabindex == '0') {
                 this.$router.push({ path: "/home" });
                 return '1'
-            } else if (this.$route.query.tabindex == '1' || this.$route.query.tabindex == '2' || this.$route.query.tabindex == '3') {
+            } else if (this.$route.query.tabindex == '1') {
+                this.fetchAnnouncements()
+                this.fetchAssignmentInfo()
+                return this.$route.query.tabindex
+            } else if (this.$route.query.tabindex == '2') {
+                this.fetchTestIDs()
+                return this.$route.query.tabindex
+            } else if (this.$route.query.tabindex == '3') {
+                this.fetchQuestions()
                 return this.$route.query.tabindex
             } else if (this.$route.query.tabindex == '4' || this.$route.query.tabindex == '5' || this.$route.query.tabindex == '6') {
                 if (this.isStudent()) {
@@ -805,7 +818,7 @@ export default {
                 },
                 headers: {
                     'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
-                }
+                },
             }).then(res => {
                 console.log(res)
                 if (res.status === 200 && res.data.code === 200) {
@@ -819,8 +832,14 @@ export default {
                     Message.error("测试详情获取失败")
                 }
             }).catch(err => {
-                Message.error("测试详情获取失败")
-                console.log(err);
+                if (err.response.status === 401) {
+                    this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                    Message.error("UNAUTHORIZED: 请重新登录")
+                    login();
+                } else {
+                    Message.error("测试详情获取失败")
+                    console.log(err);
+                }
             })
         },
         handleAssignmentQuestionRowClick(row, _column, _event) {
@@ -864,12 +883,19 @@ export default {
                         console.log(res.data)
                         if (res.status === 200 && res.data.code === 200) {
                             Message.success("公告发布成功")
+                            this.fetchedAnnos = false
                         } else {
                             Message.error("公告发布失败")
                         }
                     }).catch(err => {
-                        Message.error("公告发布失败")
-                        console.log(err)
+                        if (err.response.status === 401) {
+                            this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                            Message.error("UNAUTHORIZED: 请重新登录")
+                            login();
+                        } else {
+                            Message.error("公告发布失败")
+                            console.log(err)
+                        }
                     })
                 } else {
                     Message.warning("请按要求填写表单")
@@ -982,13 +1008,19 @@ export default {
                             console.log(res.data)
                             if (res.status === 200 && res.data.code === 200) {
                                 Message.success("题目发布成功")
-                                this.fetchQuestions()
+                                this.fetchedQuestions = false
                             } else {
                                 Message.error("题目发布失败")
                             }
                         }).catch(err => {
-                            Message.error("题目发布失败")
-                            console.log(err)
+                            if (err.response.status === 401) {
+                                this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                                Message.error("UNAUTHORIZED: 请重新登录")
+                                login();
+                            } else {
+                                Message.error("题目发布失败")
+                                console.log(err)
+                            }
                         })
                     }
                 } else {
@@ -998,81 +1030,109 @@ export default {
             })
         },
         fetchAnnouncements() {
-            axios({
-                method: API.FETCH_ANNOCES.method,
-                url: API.FETCH_ANNOCES.url,
-                params: {
-                    courseid: this.courseid,
-                },
-                headers: {
-                    'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
-                }
-            }).then(res => {
-                console.log(res.data)
-                this.announcementList = []
-                if (res.data.data.result) {
-                    res.data.data.result.forEach(announcement => {
-                        this.announcementList.push({
-                            announcementId: announcement.ID,
-                            title: announcement.Title,
-                            issue_time: new Date(Date.parse(announcement.IssueTime)).format('yyyy-MM-dd hh:mm:ss'),
+            if (!this.fetchedAnnos) {
+                this.fetchedAnnos = true
+                axios({
+                    method: API.FETCH_ANNOCES.method,
+                    url: API.FETCH_ANNOCES.url,
+                    params: {
+                        courseid: this.courseid,
+                    },
+                    headers: {
+                        'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                    }
+                }).then(res => {
+                    console.log(res.data)
+                    this.announcementList = []
+                    if (res.status === 200 && res.data.code === 200 && res.data.data.result) {
+                        res.data.data.result.forEach(announcement => {
+                            this.announcementList.push({
+                                announcementId: announcement.ID,
+                                title: announcement.Title,
+                                issue_time: new Date(Date.parse(announcement.IssueTime)).format('yyyy-MM-dd hh:mm:ss'),
+                            })
                         })
-                    })
-                }
-            }).catch(err => {
-                Message.error("获取公告列表失败")
-                console.log(err)
-            })
+                    } else {
+                        Message.error("获取公告列表失败")
+                    }
+                }).catch(err => {
+                    if (err.response.status === 401) {
+                        this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                        Message.error("UNAUTHORIZED: 请重新登录")
+                        login();
+                    } else {
+                        Message.error("获取公告列表失败")
+                        console.log(err)
+                    }
+                })
+            }
         },
         handleQuestionCurrentChange(curPage) {
             console.log("当前页: ", curPage);
             this.fetchQuestions();
         },
         fetchQuestions() {
-            axios({
-                method: API.FETCH_QUESTIONS.method,
-                url: API.FETCH_QUESTIONS.url,
-                params: {
-                    courseid: this.courseid,
-                    offset: (this.questionCurrentPage-1)*this.questionPageSize,
-                    limit: this.questionPageSize,
-                },
-                headers: {
-                    'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
-                },
-            }).then(res => {
-                console.log(res.data)
-                this.questionList = []
-                if (res.data.data.result) {
-                    this.questionTotalNum = res.data.data.result.totalNum;
-                    res.data.data.result.questions.forEach(question => {
-                        this.questionList.push({
-                            questionId: question.ID,
-                            questionName: question.Title,
-                            tag: question.Tag,
-                            score: question.UserMaxScore,
-                            totalScore: question.Score,
-                            timeLimit: question.TimeLimit,
-                            memoryLimit: question.MemoryLimit,
-                            testcaseNum: question.TestCaseNum,
-                            language: question.Language,
-                            passSubmission: question.TotalACNum,
-                            totalSubmission: question.TotalTestNum,
-                            issueTime: new Date(Date.parse(question.IssueTime)).format('yyyy-MM-dd hh:mm:ss'),
+            if (!this.isNumber(this.questionCurrentPage)) {
+                this.questionCurrentPage = 1
+            }
+            if (!this.isNumber(this.questionPageSize)) {
+                this.questionPageSize = 30
+            }
+            if (!this.isNumber(this.questionTotalNum)) {
+                this.questionTotalNum = 0
+            }
+            if (!this.fetchedQuestions) {
+                this.fetchedQuestions = true
+                axios({
+                    method: API.FETCH_QUESTIONS.method,
+                    url: API.FETCH_QUESTIONS.url,
+                    params: {
+                        courseid: this.courseid,
+                        offset: (this.questionCurrentPage-1)*this.questionPageSize,
+                        limit: this.questionPageSize,
+                    },
+                    headers: {
+                        'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                    },
+                }).then(res => {
+                    console.log(res.data)
+                    this.questionList = []
+                    if (res.status === 200 && res.data.code === 200 && res.data.data.result) {
+                        this.questionTotalNum = res.data.data.result.totalNum;
+                        res.data.data.result.questions.forEach(question => {
+                            this.questionList.push({
+                                questionId: question.ID,
+                                questionName: question.Title,
+                                tag: question.Tag,
+                                score: question.UserMaxScore,
+                                totalScore: question.Score,
+                                timeLimit: question.TimeLimit,
+                                memoryLimit: question.MemoryLimit,
+                                testcaseNum: question.TestCaseNum,
+                                language: question.Language,
+                                passSubmission: question.TotalACNum,
+                                totalSubmission: question.TotalTestNum,
+                                issueTime: new Date(Date.parse(question.IssueTime)).format('yyyy-MM-dd hh:mm:ss'),
+                            })
                         })
-                    })
-                }
-            }).catch(err => {
-                Message.error("获取题目列表失败")
-                console.log(err)
-            })
+                    } else {
+                        Message.error("获取题目列表失败")
+                    }
+                }).catch(err => {
+                    if (err.response.status === 401) {
+                        this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                        Message.error("UNAUTHORIZED: 请重新登录")
+                        login();
+                    } else {
+                        Message.error("获取题目列表失败")
+                        console.log(err)
+                    }
+                })
+            }
         },
         isNumber(val){
             var regPos = /^[0-9]+.?[0-9]*/; //判断是否是数字。
-            if (regPos.test(val)) {
-                return true;
-            }
-            return false;
+            return regPos.test(val);
         },
         initCourseID() {
             if (this.$route.query.courseid === null || this.isNumber(this.$route.query.courseid) === false) {
@@ -1080,36 +1140,36 @@ export default {
                 return 0;
             } else {
                 this.courseid = this.$route.query.courseid
-                axios({
-                    method: API.FETCH_COURSE_NAME.method,
-                    url: API.FETCH_COURSE_NAME.url,
-                    params: {
-                        courseid: this.courseid
-                    },
-                    headers: {
-                        'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
-                    }
-                }).then(res => {
-                    console.log(res.data)
-                    if (res.status === 200 && res.data.code === 200) {
-                        this.courseName = res.data.data.result
-                        Message.success("获取课程信息成功")
-                    } else {
-                        this.$router.replace("/404")
-                        Message.error("获取课程信息失败")
-                    }
-                }).catch(err => {
-                    if (err.response.status === 401) {
-                        this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
-                        Message.error("UNAUTHORIZED: 请重新登录")
-                        // this.$router.replace("/login")
-                        login();
-                    } else {
-                        Message.error("获取课程列表失败")
-                        console.log(err)
-                        this.$router.replace("/404")
-                    }
-                })
+                // axios({
+                //     method: API.FETCH_COURSE_NAME.method,
+                //     url: API.FETCH_COURSE_NAME.url,
+                //     params: {
+                //         courseid: this.courseid
+                //     },
+                //     headers: {
+                //         'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                //     }
+                // }).then(res => {
+                //     console.log(res.data)
+                //     if (res.status === 200 && res.data.code === 200) {
+                //         this.courseName = res.data.data.result
+                //         Message.success("获取课程信息成功")
+                //     } else {
+                //         this.$router.replace("/404")
+                //         Message.error("获取课程信息失败")
+                //     }
+                // }).catch(err => {
+                    // if (err.response.status === 401) {
+                    //     this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                    //     Message.error("UNAUTHORIZED: 请重新登录")
+                    //     // this.$router.replace("/login")
+                    //     login();
+                    // } else {
+                    //     Message.error("获取课程列表失败")
+                    //     console.log(err)
+                    //     this.$router.replace("/404")
+                    // }
+                // })
                 return this.$route.query.courseid
             }
         },
@@ -1144,13 +1204,19 @@ export default {
                             console.log(res.data)
                             if (res.status === 200 && res.data.code === 200) {
                                 Message.success("作业发布成功")
-                                this.fetchAssignmentInfo()
+                                this.fetchedAssignments = false
                             } else {
                                 Message.error("作业发布失败")
                             }
                         }).catch(err => {
-                            Message.error("作业发布失败")
-                            console.log(err)
+                            if (err.response.status === 401) {
+                                this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                                Message.error("UNAUTHORIZED: 请重新登录")
+                                login();
+                            } else {
+                                Message.error("作业发布失败")
+                                console.log(err)
+                            }
                         })
                     }
                 } else {
@@ -1161,88 +1227,122 @@ export default {
         },
         fetchAssignmentInfo() {
             console.log("fetchAssignmentInfo")
-            axios({
-                method: API.FETCH_ASSIGNMENT.method,
-                url: API.FETCH_ASSIGNMENT.url,
-                params: {
-                    courseid: this.courseid,
-                },
-                headers: {
-                    'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
-                },
-            }).then(res => {
-                console.log(res.data)
-                this.assignmentsInfo = []
-                if (res.data.data.result) {
-                    res.data.data.result.forEach(assignment => {
-                        var tempAssignment = {
-                            assignmentId: assignment.ID,
-                            assignmentName: assignment.Title,
-                            beginTime: new Date(Date.parse(assignment.BeginTime)).format('yyyy-MM-dd hh:mm:ss'),
-                            dueTime: new Date(Date.parse(assignment.DueTime)).format('yyyy-MM-dd hh:mm:ss'),
-                            dueState: false,
-                            description: assignment.Description,
-                            score: 0,
-                            totalScore: 0,
-                            questions: []
-                        }
-                        var total_score = 0
-                        var score = 0
-                        assignment.Questions.forEach(question => {
-                            tempAssignment.questions.push({
-                                questionId: question.ID,
-                                questionName: question.Title,
-                                tag: question.Tag,
-                                score: question.Score,
-                                totalScore: question.TotalScore,
+            if (!this.fetchedAssignments) {
+                this.fetchedAssignments = true
+                    axios({
+                    method: API.FETCH_ASSIGNMENT.method,
+                    url: API.FETCH_ASSIGNMENT.url,
+                    params: {
+                        courseid: this.courseid,
+                    },
+                    headers: {
+                        'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                    },
+                }).then(res => {
+                    console.log(res.data)
+                    this.assignmentsInfo = []
+                    if (res.status === 200 && res.data.code === 200 && res.data.data.result) {
+                        res.data.data.result.forEach(assignment => {
+                            var tempAssignment = {
+                                assignmentId: assignment.ID,
+                                assignmentName: assignment.Title,
+                                beginTime: new Date(Date.parse(assignment.BeginTime)).format('yyyy-MM-dd hh:mm:ss'),
+                                dueTime: new Date(Date.parse(assignment.DueTime)).format('yyyy-MM-dd hh:mm:ss'),
+                                dueState: false,
+                                description: assignment.Description,
+                                score: 0,
+                                totalScore: 0,
+                                questions: []
+                            }
+                            var total_score = 0
+                            var score = 0
+                            assignment.Questions.forEach(question => {
+                                tempAssignment.questions.push({
+                                    questionId: question.ID,
+                                    questionName: question.Title,
+                                    tag: question.Tag,
+                                    score: question.Score,
+                                    totalScore: question.TotalScore,
+                                })
+                                total_score += question.TotalScore
+                                score += question.Score
                             })
-                            total_score += question.TotalScore
-                            score += question.Score
+                            tempAssignment.score = score
+                            tempAssignment.totalScore = total_score
+                            tempAssignment.dueState = new Date() > new Date(Date.parse(assignment.DueTime));
+                            this.assignmentsInfo.push(tempAssignment)
                         })
-                        tempAssignment.score = score
-                        tempAssignment.totalScore = total_score
-                        tempAssignment.dueState = new Date() > new Date(Date.parse(assignment.DueTime));
-                        this.assignmentsInfo.push(tempAssignment)
-                    })
-
-                }
-            }).catch(err => {
-                Message.error("获取题目列表失败")
-                console.log(err)
-            })
+                    } else {
+                        Message.error("获取题目列表失败")
+                    }
+                }).catch(err => {
+                    if (err.response.status === 401) {
+                        this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                        Message.error("UNAUTHORIZED: 请重新登录")
+                        login();
+                    } else {
+                        Message.error("获取题目列表失败")
+                        console.log(err)
+                    }
+                })
+            }
         },
         handleTestCurrentChange(curPage) {
             console.log("当前页: ", curPage);
+            this.fetchedTestIDs = false
             this.fetchTestIDs();
         },
         fetchTestIDs() {
-            axios({
-                method: API.FETCH_TESTIDS.method,
-                url: API.FETCH_TESTIDS.url,
-                params: {
-                    courseid: this.courseid,
-                    offset: (this.testCurrentPage-1)*this.testPageSize,
-                    limit: this.testPageSize,
-                },
-                headers: {
-                    'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
-                },
-            }).then(res => {
-                console.log(res)
-                this.testids = []
-                if (res.data.data.result) {
-                    this.testTotalNum = res.data.data.result.totalNum;
-                    res.data.data.result.testids.forEach(id => {
-                        this.testids.push(parseInt(id))
-                    })
-                }
-                this.testids.reverse()
-                this.testResults = []
-                this.updateTestDetails()
-            }).catch(err => {
-                Message.error("获取评测信息失败")
-                console.log(err)
-            })
+            console.log("this.testCurrentPage: ", this.testCurrentPage, "testPageSize: ", this.testPageSize)
+            console.log("this.testTotalNum out axios: ", this.testTotalNum)
+            if (!this.isNumber(this.testCurrentPage)) {
+                this.testCurrentPage = 1
+            }
+            if (!this.isNumber(this.testPageSize)) {
+                this.testPageSize = 30
+            }
+            if (!this.isNumber(this.testTotalNum)) {
+                this.testTotalNum = 0
+            }
+            if (!this.fetchedTestIDs) {
+                this.fetchedTestIDs = true
+                axios({
+                    method: API.FETCH_TESTIDS.method,
+                    url: API.FETCH_TESTIDS.url,
+                    params: {
+                        courseid: this.courseid,
+                        offset: (this.testCurrentPage-1)*this.testPageSize,
+                        limit: this.testPageSize,
+                    },
+                    headers: {
+                        'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                    },
+                }).then(res => {
+                    console.log(res)
+                    if (res.status === 200 && res.data.code === 200 && res.data.data.result) {
+                        this.testids = []
+                        this.testTotalNum = res.data.data.result.totalNum;
+                        console.log("this.testTotalNum in axios: ", this.testTotalNum)
+                        res.data.data.result.testids.forEach(id => {
+                            this.testids.push(parseInt(id))
+                        })
+                        this.testids.reverse()
+                        this.testResults = []
+                        this.updateTestDetails()
+                    } else {
+                        Message.error("获取评测信息失败")
+                    }
+                }).catch(err => {
+                    if (err.response.status === 401) {
+                        this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                        Message.error("UNAUTHORIZED: 请重新登录")
+                        login();
+                    } else {
+                        Message.error("获取评测信息失败")
+                        console.log(err)
+                    }
+                })
+            }
         },
         updateTestDetails() {
             var tmp_results = [...this.testResults].reverse()
@@ -1273,7 +1373,7 @@ export default {
                     data: tests_to_update,
                 }).then(res => {
                     console.log(res.data)
-                    if (res.data.data.result) {
+                    if (res.status === 200 && res.data.code === 200 && res.data.data.result) {
                         if (res.data.data.result.length !== index_to_update.length) {
                             Message.error("获取评测信息失败: LENGTH DISMATCH!")
                             return
@@ -1308,10 +1408,18 @@ export default {
                             tmp_results[index_to_update[i]].running = running
                         }
                         this.testResults = tmp_results.reverse()
+                    } else {
+                        Message.error("获取评测信息失败")
                     }
                 }).catch(err => {
-                    Message.error("获取评测信息失败")
-                    console.log(err)
+                    if (err.response.status === 401) {
+                        this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                        Message.error("UNAUTHORIZED: 请重新登录")
+                        login();
+                    } else {
+                        Message.error("获取评测信息失败")
+                        console.log(err)
+                    }
                 })
             }
         },
@@ -1320,10 +1428,10 @@ export default {
         }
     },
     created() {
-        this.fetchAnnouncements()
-        this.fetchQuestions()
-        this.fetchAssignmentInfo()
-        this.fetchTestIDs()
+        // this.fetchAnnouncements()
+        // this.fetchQuestions()
+        // this.fetchAssignmentInfo()
+        // this.fetchTestIDs()
         this.timer = window.setInterval(() => {
             if (this.selectIndex === "2") {
                 setTimeout(this.updateTestDetails, 0);

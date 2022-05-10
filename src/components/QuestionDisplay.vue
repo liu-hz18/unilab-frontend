@@ -393,36 +393,36 @@ export default {
                 return 0;
             } else {
                 this.courseid = this.$route.query.courseid
-                axios({
-                    method: API.FETCH_COURSE_NAME.method,
-                    url: API.FETCH_COURSE_NAME.url,
-                    params: {
-                        courseid: this.courseid,
-                    },
-                    headers: {
-                        'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
-                    }
-                }).then(res => {
-                    console.log(res.data)
-                    if (res.status === 200 && res.data.code === 200) {
-                        this.courseName = res.data.data.result
-                        Message.success("获取课程信息成功")
-                    } else {
-                        this.$router.replace("/404")
-                        Message.error("获取课程信息失败")
-                    }
-                }).catch(err => {
-                    if (err.response.status === 401) {
-                        this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
-                        Message.error("UNAUTHORIZED: 请重新登录")
-                        // this.$router.replace("/login")
-                        login();
-                    } else {
-                        Message.error("获取课程列表失败")
-                        console.log(err)
-                        this.$router.replace("/404")
-                    }
-                })
+                // axios({
+                //     method: API.FETCH_COURSE_NAME.method,
+                //     url: API.FETCH_COURSE_NAME.url,
+                //     params: {
+                //         courseid: this.courseid,
+                //     },
+                //     headers: {
+                //         'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                //     }
+                // }).then(res => {
+                //     console.log(res.data)
+                //     if (res.status === 200 && res.data.code === 200) {
+                //         this.courseName = res.data.data.result
+                //         Message.success("获取课程信息成功")
+                //     } else {
+                //         this.$router.replace("/404")
+                //         Message.error("获取课程信息失败")
+                //     }
+                // }).catch(err => {
+                //     if (err.response.status === 401) {
+                //         this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                //         Message.error("UNAUTHORIZED: 请重新登录")
+                //         // this.$router.replace("/login")
+                //         login();
+                //     } else {
+                //         Message.error("获取课程列表失败")
+                //         console.log(err)
+                //         this.$router.replace("/404")
+                //     }
+                // })
                 return this.$route.query.courseid
             }
         },
@@ -443,40 +443,44 @@ export default {
                     }
                 }).then(res => {
                     console.log(res.data)
-                    this.title = res.data.data.result.Title
-                    this.issueTime = res.data.data.result.IssueTime
-                    this.content = res.data.data.result.Content
-                    this.appendixPath = res.data.data.result.AppendixFile
-                    this.memoryLimit = res.data.data.result.MemoryLimit
-                    this.timeLimit = res.data.data.result.TimeLimit
-                    this.language = res.data.data.result.Language.toLowerCase()
-                    this.creator = res.data.data.result.Creator
-                    this.testCaseNum = res.data.data.result.TestCaseNum
-                    this.tag = res.data.data.result.Tag
-                    this.languageOptions.forEach(language => {
-                        if (language.key.toLowerCase() === this.language) {
-                            language.disabled = false
-                            this.mode = language.lint
-                            this.languagetype = language.type
-                            if (this.languagetype === localStorage.getItem('Language')) {
-                                this.code = localStorage.getItem('Code') ? localStorage.getItem('Code') : CodeGuide[this.languagetype];
+                    if (res.status === 200 && res.data.code === 200) {
+                        this.title = res.data.data.result.Title
+                        this.issueTime = res.data.data.result.IssueTime
+                        this.content = res.data.data.result.Content
+                        this.appendixPath = res.data.data.result.AppendixFile
+                        this.memoryLimit = res.data.data.result.MemoryLimit
+                        this.timeLimit = res.data.data.result.TimeLimit
+                        this.language = res.data.data.result.Language.toLowerCase()
+                        this.creator = res.data.data.result.Creator
+                        this.testCaseNum = res.data.data.result.TestCaseNum
+                        this.tag = res.data.data.result.Tag
+                        this.languageOptions.forEach(language => {
+                            if (language.key.toLowerCase() === this.language) {
+                                language.disabled = false
+                                this.mode = language.lint
+                                this.languagetype = language.type
+                                if (this.languagetype === localStorage.getItem('Language')) {
+                                    this.code = localStorage.getItem('Code') ? localStorage.getItem('Code') : CodeGuide[this.languagetype];
+                                } else {
+                                    this.code = CodeGuide[this.languagetype]
+                                }
                             } else {
-                                this.code = CodeGuide[this.languagetype]
+                                language.disabled = true
                             }
-                        } else {
-                            language.disabled = true
-                        }
-                    })
-                    console.log(this.appendixPath)
-                    Message.success("获取题目信息成功")
+                        })
+                        console.log(this.appendixPath)
+                        Message.success("获取题目信息成功")
+                    } else {
+                        this.$router.replace("/404")
+                        Message.error("获取题目信息失败")
+                    }
                 }).catch(err => {
                     if (err.response.status === 401) {
                         this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
                         Message.error("UNAUTHORIZED: 请重新登录")
-                        // this.$router.replace("/login")
                         login();
                     } else {
-                        Message.error("获取课程信息失败")
+                        Message.error("获取题目信息失败")
                         console.log(err)
                         this.$router.replace("/404")
                     }
@@ -486,43 +490,48 @@ export default {
         },
         downloadAppendix() {
             const formData = new FormData();
-            formData.append("path", this.appendixPath)
+            formData.append("courseid", this.courseid)
             axios({
                 method: API.FETCH_QUESTION_APPENDIX.method,
                 url: API.FETCH_QUESTION_APPENDIX.url,
                 responseType: "blob",
                 data: formData,
+                headers: {
+                    'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+                }
             }).then(res => {
                 console.log(res.data)
-                let blob = new Blob([res.data], { type: "application/zip" })
-                let a = document.createElement("a")
-                console.log(res.headers)
-                let fileName = "appendix.zip"
-                if (!!window.ActiveXObject || "ActiveXObject" in window) {
-                    // IE
-                    window.navigator.msSaveBlob(blob, fileName);
+                if (res.status === 200 && res.data.code === 200) {
+                    let blob = new Blob([res.data], { type: "application/zip" })
+                    let a = document.createElement("a")
+                    console.log(res.headers)
+                    let fileName = "appendix.zip"
+                    if (!!window.ActiveXObject || "ActiveXObject" in window) {
+                        // IE
+                        window.navigator.msSaveBlob(blob, fileName);
+                    } else {
+                        // 非IE
+                        a.setAttribute("download", fileName);
+                    }
+                    a.href = window.URL.createObjectURL(blob)
+                    a.download = decodeURI(fileName);
+                    console.log(a.href)
+                    document.body.appendChild(a)
+                    a.click()
+                    window.URL.revokeObjectURL(a.href)
+                    document.body.removeChild(a)
                 } else {
-                    // 非IE
-                    a.setAttribute("download", fileName);
+                    Message.error("获取附件失败")
                 }
-                a.href = window.URL.createObjectURL(blob)
-                a.download = decodeURI(fileName);
-                console.log(a.href)
-                document.body.appendChild(a)
-                a.click()
-                window.URL.revokeObjectURL(a.href)
-                document.body.removeChild(a)
             }).catch(err => {
                 console.log(err)
                 if (err.response.status === 401) {
                     this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
                     Message.error("UNAUTHORIZED: 请重新登录")
-                    // this.$router.replace("/login")
                     login();
                 } else {
                     Message.error("获取附件失败")
                     console.log(err)
-                    this.$router.replace("/404")
                 }
             })
         },
@@ -565,12 +574,19 @@ export default {
                 console.log(res);
                 if (res.status === 200 && res.data.code === 200) {
                     Message.success("代码提交成功")
+                    this.$router.push({ path: "/ojlab", query: { tabindex: 2, courseid: this.courseid } });
                 } else {
                     Message.error("代码提交失败")
                 }
             }).catch(err => { // 请求失败处理
-                console.log(err);
-                Message.error("代码提交失败");
+                if (err.response.status === 401) {
+                    this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                    Message.error("UNAUTHORIZED: 请重新登录")
+                    login();
+                } else {
+                    console.log(err);
+                    Message.error("代码提交失败");
+                } 
             });
         },
         handleCodeFileUpload() {
@@ -602,12 +618,19 @@ export default {
                     this.$refs.upload.clearFiles();
                     this.fileList = []
                     Message.success("文件提交成功");
+                    this.$router.push({ path: "/ojlab", query: { tabindex: 2, courseid: this.courseid } });
                 } else {
                     Message.error("文件提交失败");
                 }
-            }).catch(function (error) { // 请求失败处理
-                console.log(error);
-                Message.error("文件提交失败");
+            }).catch(err => { // 请求失败处理
+                if (err.response.status === 401) {
+                    this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                    Message.error("UNAUTHORIZED: 请重新登录")
+                    login();
+                } else {
+                    console.log(err);
+                    Message.error("文件提交失败");
+                }
             });
         },
         handleCodeExceed(files, fileList) {

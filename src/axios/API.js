@@ -80,8 +80,14 @@ const API = {
     },
     FETCH_USER_COURSE: {
         method: "get",
-        url: "/student/fetch-my-course"
+        url: "/student/fetch-my-course",
     },
+    // user behavior
+    ACCESS_COURSE: {
+        method: "get",
+        url: "/student/access-course",
+    },
+
     // os apis
     OS_GRADE: {
         method: "get",

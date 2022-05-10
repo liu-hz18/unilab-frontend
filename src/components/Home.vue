@@ -288,6 +288,25 @@ export default {
       console.log(row, row.id, row.name, column, event);
       if (row.type === CourseType.OJ) {
         this.$router.push({ path: "/ojlab", query: { tabindex: '1', courseid: row.id } });
+        axios({
+          method: API.ACCESS_COURSE.method,
+          url: API.ACCESS_COURSE.url,
+          params: {
+            courseid: row.id,
+          },
+          headers: {
+            'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
+          }
+        }).then(res => {
+          console.log(res.data)
+        }).catch(err => {
+          console.log(err)
+          if (err.response.status === 401) {
+            this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+            Message.error("UNAUTHORIZED: 请重新登录")
+            login();
+          }
+        })
       } else if (row.type === CourseType.GitLab) {
         this.$router.push({ path: "/os" });
       } else {
@@ -309,6 +328,7 @@ export default {
     handleUploadStudentRemove(file, fileList) {
       console.log(file, fileList)
       this.createCourseForm.students = []
+      this.fetchingUsers = true
     },
     readSingleExcelFile(file) {
       if (!/\.(xls|xlsx)$/.test(file.name.toLowerCase())) {
@@ -416,9 +436,15 @@ export default {
               } else {
                 Message.error("课程创建失败")
               }
-            }).catch( err => {
-              Message.error("课程创建失败")
-              console.log(err)
+            }).catch(err => {
+              if (err.response.status === 401) {
+                  this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                  Message.error("UNAUTHORIZED: 请重新登录")
+                  login();
+              } else {
+                  Message.error("课程创建失败")
+                  console.log(err)
+              }
             })
           }
         } else {
@@ -443,16 +469,26 @@ export default {
           url: API.FETCH_ALL_USER.url,
         }).then( res => {
           console.log(res.data)
-          res.data.data.result.forEach(user => {
-            this.usersAvailable.push({
-              id: user.id,
-              name: user.name
+          if (res.status === 200 && res.data.code === 200) {
+            res.data.data.result.forEach(user => {
+              this.usersAvailable.push({
+                id: user.id,
+                name: user.name
+              })
             })
-          })
-          this.fetchingUsers = false;
+            this.fetchingUsers = false;
+          } else {
+            Message.error("获取用户列表失败")
+          }
         }).catch( err => {
-          console.log(err)
-          Message.error("获取用户列表失败")
+            if (err.response.status === 401) {
+                this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+                Message.error("UNAUTHORIZED: 请重新登录")
+                login();
+            } else {
+              console.log(err)
+              Message.error("获取用户列表失败")
+            }
         })
       }
     },
@@ -468,17 +504,27 @@ export default {
           url: API.FETCH_ALL_TEACHER.url,
         }).then( res => {
           console.log(res.data)
-          res.data.data.result.forEach(user => {
-            this.teachersAvailable.push({
-              id: user.id,
-              name: user.name
+          if (res.status === 200 && res.data.code === 200) {
+            res.data.data.result.forEach(user => {
+              this.teachersAvailable.push({
+                id: user.id,
+                name: user.name
+              })
             })
-          })
-          this.fetchingTeachers = false;
-          this.createCourseForm.teachers.push(parseInt(localStorage.getItem("UserID")));
+            this.fetchingTeachers = false;
+            this.createCourseForm.teachers.push(parseInt(localStorage.getItem("UserID")));
+          } else {
+            Message.error("获取教师列表失败")
+          }
         }).catch( err => {
-          console.log(err)
-          Message.error("获取教师列表失败")
+          if (err.response.status === 401) {
+              this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
+              Message.error("UNAUTHORIZED: 请重新登录")
+              login();
+          } else {
+            console.log(err)
+            Message.error("获取教师列表失败")
+          }
         })
       }
     },
@@ -496,7 +542,7 @@ export default {
       }).then( res => {
         console.log(res.data)
         this.courseList = []
-        if (res.data.data.result) {
+        if (res.status === 200 && res.data.code === 200 && res.data.data.result) {
           res.data.data.result.forEach(course => {
             this.courseList.push({
               id: course.CourseID,
@@ -509,13 +555,14 @@ export default {
               time: course.CourseTerm,
             })
           })
+        } else {
+          Message.error("获取课程列表失败")
         }
       }).catch(err => {
         console.log("error:", err)
         if (err.response.status === 401) {
           this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
           Message.error("UNAUTHORIZED: 请重新登录")
-          // this.$router.push("/login")
           login();
         } else {
           Message.error("获取课程列表失败")
