@@ -490,7 +490,7 @@ export default {
         },
         downloadAppendix() {
             const formData = new FormData();
-            formData.append("courseid", this.courseid)
+            formData.append("questionid", this.questionID)
             axios({
                 method: API.FETCH_QUESTION_APPENDIX.method,
                 url: API.FETCH_QUESTION_APPENDIX.url,
@@ -501,7 +501,7 @@ export default {
                 }
             }).then(res => {
                 console.log(res.data)
-                if (res.status === 200 && res.data.code === 200) {
+                if (res.status === 200) {
                     let blob = new Blob([res.data], { type: "application/zip" })
                     let a = document.createElement("a")
                     console.log(res.headers)
