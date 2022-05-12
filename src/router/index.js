@@ -31,6 +31,14 @@ const router = new VueRouter({
             }
         },
         {
+            path: "/bulktest",
+            name: "bulktest",
+            component: resolve => require(["../components/BulkSubmission.vue"], resolve),
+            meta: {
+                permission: AutoritityMap["admin"]
+            }
+        },
+        {
             path: '/login',
             name: 'login',
             // component: UniLabLogin,

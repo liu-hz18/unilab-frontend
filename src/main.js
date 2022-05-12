@@ -74,7 +74,7 @@ axios.interceptors.response.use(response => {
 }, (err) => {
   // Any status codes that falls outside the range of 2xx cause this function to trigger
   // 返回状态码不为200时候的错误处理
-  console.log("error", err.response)
+  console.log("error: ", err.response)
   switch (err.response.status) {
       case HTTP_STATUS_ERROR_CODE.UNAUTHORIZED:
           clearStates(err.response.data)
