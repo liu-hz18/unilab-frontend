@@ -7,7 +7,8 @@
     "serve": "vue-cli-service serve --mode development",
     "build": "vue-cli-service build --mode production",
     "lint": "vue-cli-service lint --no-fix",
-    "eslint": "vue-cli-service lint",
+    "lint:eslint": "eslint {library,mock,src}/**/*.{vue,ts,tsx} --fix",
+    "lint:prettier": "prettier {library,src,mock}/**/*.{html,vue,css,sass,scss,ts,md} --write",
     "report": "vue-cli-service build --mode production --report"
   },
   "dependencies": {
@@ -41,7 +42,7 @@
     "eslint-plugin-html": "^6.2.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^8.0.3",
-    "husky": "^8.0.1",
+    "husky": "^8.0.0",
     "lint-staged": "^12.4.1",
     "prettier": "2.6.2",
     "progress-bar-webpack-plugin": "^2.1.0",
