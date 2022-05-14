@@ -6,7 +6,7 @@
     "prepare": "husky install",
     "serve": "vue-cli-service serve --mode development",
     "build": "vue-cli-service build --mode production",
-    "lint": "vue-cli-service lint --no-fix",
+    "lint": "vue-cli-service lint",
     "lint:eslint": "eslint {library,mock,src}/**/*.{vue,ts,tsx} --fix",
     "lint:prettier": "prettier {library,src,mock}/**/*.{html,vue,css,sass,scss,ts,md} --write",
     "report": "vue-cli-service build --mode production --report"
