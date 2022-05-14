@@ -5,7 +5,8 @@
   "scripts": {
     "serve": "vue-cli-service serve --mode development",
     "build": "vue-cli-service build --mode production",
-    "lint": "vue-cli-service lint",
+    "lint": "vue-cli-service lint --no-fix",
+    "eslint": "vue-cli-service lint",
     "report": "vue-cli-service build --mode production --report"
   },
   "dependencies": {
@@ -32,9 +33,16 @@
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
+    "babel-eslint": "^10.1.0",
     "compression-webpack-plugin": "^9.2.0",
-    "eslint": "^7.32.0",
+    "eslint": "^8.15.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-html": "^6.2.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^8.0.3",
+    "husky": "^8.0.1",
+    "lint-staged": "^12.4.1",
+    "prettier": "2.6.2",
     "progress-bar-webpack-plugin": "^2.1.0",
     "vue-template-compiler": "^2.6.14"
   },
@@ -44,15 +52,34 @@
       "node": true
     },
     "extends": [
+      "eslint:recommended",
       "plugin:vue/essential",
-      "eslint:recommended"
+      "plugin:prettier/recommended"
     ],
     "parserOptions": {
-      "parser": "@babel/eslint-parser"
+      "parser": "@babel/eslint-parser",
+      "requireConfigFile": false
     },
     "rules": {
-      "no-unused-vars":"off"
+      "no-unused-vars": "off",
+      "prettier/prettier": "error"
+    },
+    "plugins": [
+      "prettier",
+      "vue",
+      "html"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
     }
+  },
+  "lint-staged": {
+    "src/**/**/*.{js,json,css,vue}": [
+      "eslint src/**/**/*.{js,vue}",
+      "git add"
+    ]
   },
   "browserslist": [
     "> 1%",
