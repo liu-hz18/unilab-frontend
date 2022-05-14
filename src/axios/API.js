@@ -6,8 +6,7 @@ const API = {
   // admin apis
   ADD_TEACHERS: {
     method: "post",
-    url: "/admin/add-teachers",
-    
+    url: "/admin/add-teachers"
   },
   // teacher apis
   CREATE_COURSE: {

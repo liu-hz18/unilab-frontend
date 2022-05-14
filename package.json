@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prepare": "husky install",
     "serve": "vue-cli-service serve --mode development",
     "build": "vue-cli-service build --mode production",
     "lint": "vue-cli-service lint --no-fix",
@@ -49,6 +50,7 @@
   "eslintConfig": {
     "root": true,
     "env": {
+      "browser": true,
       "node": true
     },
     "extends": [
@@ -77,8 +79,18 @@
   },
   "lint-staged": {
     "src/**/**/*.{js,json,css,vue}": [
-      "eslint src/**/**/*.{js,vue}",
+      "eslint src/**/**/*.{js,vue} --fix",
+      "prettier --write",
       "git add"
+    ],
+    "{!(package)*.json,*.code-snippets,.!(browserslist)*rc}": [
+      "prettier --write--parser json"
+    ],
+    "package.json": [
+      "prettier --write"
+    ],
+    "*.md": [
+      "prettier --write"
     ]
   },
   "browserslist": [
