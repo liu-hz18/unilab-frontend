@@ -1,14 +1,16 @@
 <template>
   <div class="markdown-editor">
     <div class="upload-progress" :style="`width:${progress}%`" />
-    <MarkdownPro
-      v-model="content"
-      :toolbars="toolbars"
-      theme="oneDark"
-      @on-ready="ready"
-      @on-upload-image="upImg"
-      style="height: 500px; text-align: left"
-    />
+    <div class="markdown-editor-inner">
+      <MarkdownPro
+        v-model="content"
+        :toolbars="toolbars"
+        theme="oneDark"
+        @on-ready="ready"
+        @on-upload-image="upImg"
+        style="height: 500px; text-align: left"
+      />
+    </div>
   </div>
 </template>
 
@@ -96,5 +98,11 @@ export default {
 }
 .CodeMirror {
   height: 460px;
+}
+.markdown-editor-inner {
+  line-height: 19px !important;
+}
+.cm-s-default .cm-header {
+  color: #fff !important;
 }
 </style>

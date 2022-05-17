@@ -1102,7 +1102,6 @@ export default {
         path: "/question",
         query: { id: row.questionId, courseid: this.courseid },
       });
-      this.reload();
     },
     codesPanelChange(activeNames) {
       for (let id of activeNames) {

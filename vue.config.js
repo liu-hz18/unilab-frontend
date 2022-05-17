@@ -15,6 +15,12 @@ module.exports = {
       : "assets",
   transpileDependencies: true,
   productionSourceMap: false,
+  chainWebpack: (config) => {
+    config.plugin("html").tap((args) => {
+      args[0].title = "Unilab 通用课程平台";
+      return args;
+    });
+  },
   // `devServer` only work for local development mode
   devServer: {
     open: true,

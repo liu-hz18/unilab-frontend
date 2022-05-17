@@ -94,6 +94,7 @@ export default {
   components: {
     MarkdownPreview,
   },
+  inject: ["reload"],
   data() {
     return {
       username: this.$store.state.UserName || "unknown",
