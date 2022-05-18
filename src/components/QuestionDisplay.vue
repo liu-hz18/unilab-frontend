@@ -594,36 +594,6 @@ export default {
         return 0;
       } else {
         this.courseid = this.$route.query.courseid;
-        // axios({
-        //     method: API.FETCH_COURSE_NAME.method,
-        //     url: API.FETCH_COURSE_NAME.url,
-        //     params: {
-        //         courseid: this.courseid,
-        //     },
-        //     headers: {
-        //         'Authorization': localStorage.getItem("Authorization") ? localStorage.getItem("Authorization") : ""
-        //     }
-        // }).then(res => {
-        //     console.log(res.data)
-        //     if (res.status === 200 && res.data.code === 200) {
-        //         this.courseName = res.data.data.result
-        //         Message.success("获取课程信息成功")
-        //     } else {
-        //         this.$router.replace("/404")
-        //         Message.error("获取课程信息失败")
-        //     }
-        // }).catch(err => {
-        //     if (err.response.status === 401) {
-        //         this.CHANGE_LOCALSTORAGE_ON_LOGOUT()
-        //         Message.error("UNAUTHORIZED: 请重新登录")
-        //         // this.$router.replace("/login")
-        //         login();
-        //     } else {
-        //         Message.error("获取课程列表失败")
-        //         console.log(err)
-        //         this.$router.replace("/404")
-        //     }
-        // })
         return this.$route.query.courseid;
       }
     },

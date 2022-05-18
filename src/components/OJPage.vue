@@ -306,19 +306,25 @@
             :data="showQuestionItems"
             stripe
             :key="updateKey"
-            @row-click="handleQuestionRowClick"
+            :cell-style="{ padding: '9px 0' }"
             :default-sort="{ prop: 'questionId', order: 'descending' }"
             style="width: 90%; margin-left: 10px"
           >
             <el-table-column prop="questionId" label="QID" width="100" sortable>
             </el-table-column>
-            <el-table-column
-              prop="questionName"
-              label="Question"
-              show-overflow-tooltip
-              sortable
-            >
+
+            <el-table-column label="Question" show-overflow-tooltip sortable>
+              <template slot-scope="props">
+                <el-button
+                  type="text"
+                  size="medium"
+                  @click="handleClickQuestionDetail(props.$index, props.row)"
+                >
+                  {{ props.row.questionName }}
+                </el-button>
+              </template>
             </el-table-column>
+
             <el-table-column
               label="score"
               width="100"
@@ -1171,12 +1177,6 @@ export default {
         query: { id: row.questionId, courseid: this.courseid },
       });
     },
-    handleQuestionRowClick(row, _column, _event) {
-      this.$router.push({
-        path: "/question",
-        query: { id: row.questionId, courseid: this.courseid },
-      });
-    },
     handleAnnouncementClick(index, announcement) {
       console.log(index, announcement);
       this.$router.push({
@@ -1841,7 +1841,11 @@ export default {
                   testCases: [],
                   tryTimes: updatetimes,
                 };
+                var passCount = 0;
                 res.data.data.result[i].TestCases.forEach((testcase) => {
+                  if (testcase.State === "Accepted") {
+                    passCount += 1;
+                  }
                   tmp_results[index_to_update[i]].testCases.push({
                     caseId: testcase.ID,
                     state: testcase.State,
@@ -1861,6 +1865,10 @@ export default {
                     (testcase.State === "Pending" ||
                       testcase.State === "Running");
                 });
+                tmp_results[index_to_update[i]].score = Math.ceil(
+                  (passCount * tmp_results[index_to_update[i]].totalScore) /
+                    tmp_results[index_to_update[i]].testCases.length
+                );
                 tmp_results[index_to_update[i]].running = running;
               }
               this.testResults = tmp_results.reverse();
