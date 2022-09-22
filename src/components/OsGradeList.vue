@@ -52,9 +52,9 @@
           <el-collapse-item
             :title="
               '所有测试点  Pass：' +
-              info.n_passed +
-              '，Fail：' +
               info.n_failed +
+              '，Fail：' +
+              info.n_passed +
               '，Total：' +
               info.total_score
             "

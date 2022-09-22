@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <router-view v-if="isRouterAlive" />
+    <transition name="fade" mode="out-in">
+      <router-view v-if="isRouterAlive" />
+    </transition>
   </div>
 </template>
 
@@ -36,5 +38,9 @@ export default {
   text-align: left;
   color: #2c3e50;
   margin-top: 0px;
+}
+
+.fade-enter-active {
+  animation: opacity 0.7s;
 }
 </style>

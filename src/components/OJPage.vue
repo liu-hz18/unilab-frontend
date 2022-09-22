@@ -177,10 +177,10 @@
             :key="updateKey"
             row-key="testId"
             :cell-style="{ padding: '8px 0' }"
-            :default-sort="{ prop: 'uploadTime', order: 'descending' }"
+            :default-sort="{ prop: 'testId', order: 'descending' }"
             style="width: 90%; margin-left: 10px"
           >
-            <el-table-column prop="testId" label="QID" width="100" sortable>
+            <el-table-column prop="testId" label="TID" width="100" sortable>
             </el-table-column>
             <el-table-column
               prop="name"
