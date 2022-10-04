@@ -52,21 +52,17 @@
       </el-header>
 
       <!-- course homepage -->
-      <el-container v-if="selectIndex == '1'">
-        <!-- course announcements -->
+      <!-- <el-container v-if="selectIndex == '1'">
         <el-aside width="25%">
           <el-card class="box-card">
             <div slot="header" class="clearfix">
               <span>课程公告</span>
             </div>
-            <!-- <el-link type="primary" v-for="(announcement, index) in announcementList" :key="announcement.id" class="text-item" :underline="false" @click="handleAnnouncementClick(index, announcement)" style="width: 100%; text-align: left; justify-content: left; font-size: 17px; margin-bottom: 3px;">
-                         {{ announcement.title }}  
-                        </el-link> -->
           </el-card>
         </el-aside>
-      </el-container>
+      </el-container> -->
       <!-- questions -->
-      <el-container v-else-if="selectIndex == '2'">
+      <!-- <el-container v-else-if="selectIndex == '2'">
         <el-main style="width: 100%">
           <el-input
             v-model="searchQuestion"
@@ -106,9 +102,10 @@
             </el-table-column>
           </el-table>
         </el-main>
-      </el-container>
+      </el-container> -->
       <!-- create repo -->
-      <el-container v-else-if="selectIndex == '3'">
+      <!-- <el-container v-else-if="selectIndex == '1'"> -->
+      <el-container v-if="selectIndex == '1'">
         <el-main>
           <h2>创建作业仓库</h2>
           <h3>请完成本学期 OS 实验的语言选择</h3>
@@ -328,7 +325,7 @@ export default {
         console.log(res);
         if (res.status === 200) {
           var data = res.data;
-          if (data.code === 200) {
+          if (data["code"] === 200) {
             Message.success("创建仓库成功");
           } else {
             Message.error(data["data"]["err"]);
