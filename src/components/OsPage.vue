@@ -327,10 +327,10 @@ export default {
       }).then((res) => {
         console.log(res);
         if (res.status === 200) {
-          data = res.data;
+          var data = res.data;
           if(data.code === 200){
             Message.success("创建仓库成功");
-          }else{
+          } else {
             Message.error(data["data"]["err"]);
           }
         } else {
