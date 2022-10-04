@@ -325,6 +325,8 @@ export default {
         console.log(res);
         if (res.status === 200) {
           var data = res.data;
+          console.log(data);
+          console.log(data["code"]);
           if (data["code"] === 200) {
             Message.success("创建仓库成功");
           } else {
