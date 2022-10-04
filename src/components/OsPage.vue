@@ -326,6 +326,7 @@ export default {
         if (res.status === 200) {
           var data = res.data;
           if (data["code"] === 200) {
+            console.log("仓库不存在");
             this.selectDisabled = false;
             this.buttonDisabled = false;
           } else {
