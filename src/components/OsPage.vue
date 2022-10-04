@@ -343,9 +343,9 @@ export default {
       // console.log(this.createRepoForm.lab);
       const loading = this.$loading({
         lock: true,
-        text: 'Loading',
-        spinner: 'el-icon-loading',
-        background: 'rgba(0, 0, 0, 0.7)'
+        text: "Loading",
+        spinner: "el-icon-loading",
+        background: "rgba(0, 0, 0, 0.7)"
       });
       const formData = new FormData();
       formData.append("id", localStorage.getItem("UserID") || "");
@@ -367,7 +367,7 @@ export default {
           var data = res.data;
           if (data["code"] === 200) {
             Message.success("创建仓库成功");
-            window.location.href="";
+            window.location.href = "";
           } else {
             Message.error(data["data"]["err"]);
           }
