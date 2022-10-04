@@ -105,5 +105,9 @@ const API = {
     method: "post",
     url: "/Os/CreateRepo",
   },
+  OS_CHECK_REPO: {
+    method: "get",
+    url: "/Os/CheckRepoExist",
+  },
 };
 export default API;
