@@ -327,7 +327,12 @@ export default {
       }).then((res) => {
         console.log(res);
         if (res.status === 200) {
-          Message.success("创建仓库成功");
+          data = res.data;
+          if(data.code === 200){
+            Message.success("创建仓库成功");
+          }else{
+            Message.error(data["data"]["err"]);
+          }
         } else {
           Message.error("创建仓库失败，请联系助教");
         }
