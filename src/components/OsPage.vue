@@ -310,7 +310,7 @@ export default {
         });
     },
     handleCreateRepoSubmit(formName) {
-      console.log(this.createRepoForm.lab);
+      // console.log(this.createRepoForm.lab);
       const formData = new FormData();
       formData.append("id", localStorage.getItem("UserID") || "");
       formData.append("lab", this.createRepoForm.lab);
@@ -325,6 +325,7 @@ export default {
           Authorization: localStorage.getItem("Authorization") || "",
         },
       }).then((res) => {
+        console.log(res);
         if (res.status === 200) {
           Message.success("创建仓库成功");
         } else {
