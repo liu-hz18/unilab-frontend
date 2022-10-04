@@ -325,6 +325,7 @@ export default {
       }).then((res) => {
         if (res.status === 200) {
           var data = res.data;
+          console.log(data);
           if (data["code"] === 200) {
             console.log("仓库不存在");
             this.selectDisabled = false;
