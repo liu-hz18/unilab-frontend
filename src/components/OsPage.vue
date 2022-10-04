@@ -323,11 +323,8 @@ export default {
           Authorization: localStorage.getItem("Authorization") || "",
         },
       }).then((res) => {
-        console.log("check exist");
-        console.log(res);
         if (res.status === 200) {
           var data = res.data;
-          console.log(data);
           if (data["code"] === 200) {
             console.log("仓库不存在");
             this.selectDisabled = false;
@@ -344,6 +341,12 @@ export default {
     },
     handleCreateRepoSubmit(formName) {
       // console.log(this.createRepoForm.lab);
+      const loading = this.$loading({
+        lock: true,
+        text: 'Loading',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
       const formData = new FormData();
       formData.append("id", localStorage.getItem("UserID") || "");
       formData.append("lab", this.createRepoForm.lab);
@@ -359,12 +362,12 @@ export default {
         },
       }).then((res) => {
         console.log(res);
+        loading.close();
         if (res.status === 200) {
           var data = res.data;
-          console.log(data);
-          console.log(data["code"]);
           if (data["code"] === 200) {
             Message.success("创建仓库成功");
+            window.location.href="";
           } else {
             Message.error(data["data"]["err"]);
           }
@@ -375,7 +378,7 @@ export default {
     },
   },
   created() {
-    this.fetchGradeList();
+    // this.fetchGradeList();
     this.CheckRepoExist();
   },
 };
