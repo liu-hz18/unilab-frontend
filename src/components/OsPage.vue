@@ -326,10 +326,12 @@ export default {
         if (res.status === 200) {
           var data = res.data;
           if (data["code"] === 200) {
-            Message.success("已经创建过仓库");
-          } else {
             this.selectDisabled = false;
             this.buttonDisabled = false;
+          } else {
+            Message.success("已经创建过仓库");
+            this.selectDisabled = true;
+            this.buttonDisabled = true;
           }
         } else {
           Message.error("加载失败");
