@@ -315,7 +315,7 @@ export default {
     },
     CheckRepoExist() {
       axios({
-        ...API.CheckRepoExist,
+        ...API.OS_CHECK_REPO,
         params: {
           id: localStorage.getItem("UserID") || "",
         },
