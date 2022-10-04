@@ -314,6 +314,12 @@ export default {
         });
     },
     CheckRepoExist() {
+      const loading = this.$loading({
+        lock: true,
+        text: "Loading",
+        spinner: "el-icon-loading",
+        background: "rgba(0, 0, 0, 0.7)",
+      });
       axios({
         ...API.OS_CHECK_REPO,
         params: {
@@ -323,6 +329,7 @@ export default {
           Authorization: localStorage.getItem("Authorization") || "",
         },
       }).then((res) => {
+        loading.close();
         if (res.status === 200) {
           var data = res.data;
           if (data["code"] === 200) {
@@ -367,7 +374,6 @@ export default {
           var data = res.data;
           if (data["code"] === 200) {
             Message.success("创建仓库成功");
-            window.location.href = "";
           } else {
             Message.error(data["data"]["err"]);
           }
