@@ -311,12 +311,16 @@ export default {
     },
     handleCreateRepoSubmit(formName) {
       console.log(this.createRepoForm.lab);
+      const formData = new FormData();
+      formData.append("id", localStorage.getItem("UserID") || "");
+      formData.append("lab", this.createRepoForm.lab);
       axios({
         ...API.OS_CREATE_REPO,
-        data: {
-          id: localStorage.getItem("UserID") || "",
-          lab: this.createRepoForm.lab,
-        },
+        // data: {
+        //   id: localStorage.getItem("UserID") || "",
+        //   lab: this.createRepoForm.lab,
+        // },
+        data: formData,
         headers: {
           Authorization: localStorage.getItem("Authorization") || "",
         },
