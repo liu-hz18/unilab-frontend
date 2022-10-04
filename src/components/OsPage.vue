@@ -323,6 +323,8 @@ export default {
           Authorization: localStorage.getItem("Authorization") || "",
         },
       }).then((res) => {
+        console.log("check exist");
+        console.log(res);
         if (res.status === 200) {
           var data = res.data;
           console.log(data);
