@@ -15,6 +15,7 @@
               </el-menu-item>
               <el-menu-item index="1">本课程</el-menu-item>
               <el-menu-item index="2">章节实验</el-menu-item>
+              <el-menu-item index="3">创建仓库</el-menu-item>
             </el-menu>
           </el-col>
           <el-col :span="3" style="margin-top: 9px">
@@ -106,6 +107,33 @@
           </el-table>
         </el-main>
       </el-container>
+
+      <!-- create repo -->
+      <el-container v-else-if="selectIndex == '3'">
+        <el-main>
+          <h2>创建作业仓库</h2>
+          <h3>请完成本学期 OS 实验的语言选择</h3>
+          <p>系统会根据你的选择在 git.tsinghua.edu.cn 上创建对应的仓库</p>
+          <p>创建仓库后，如果想更换另一种语言，请联系助教进行相关操作</p>
+          <el-form ref="createRepoForm" :model="createRepoForm">
+            <el-form-item label="实验" required>
+              <el-select v-model="createRepoForm.lab" placeholder="实验">
+                <el-option label="rCore (rust)" value="rust"></el-option>
+                <el-option label="uCore (c)" value="c"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-button
+                type="primary"
+                @click="handleCreateRepoSubmit('createRepoForm')"
+              >
+                创建仓库
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </el-main>
+      </el-container>
+
     </el-container>
   </div>
 </template>
@@ -163,6 +191,9 @@ export default {
           totalScore: 27,
         },
       ],
+      createRepoForm: {
+        lab: "",
+      },
     };
   },
   computed: {
@@ -279,6 +310,25 @@ export default {
           // 请求失败处理
           console.log(error);
         });
+    },
+    handleCreateRepoSubmit(formName) {
+      console.log(this.createRepoForm.lab);
+      axios({
+        ...API.OS_CREATE_REPO,
+        data: {
+          id: localStorage.getItem("UserID") || "",
+          lab: this.createRepoForm.lab,
+        },
+        headers: {
+          Authorization: localStorage.getItem("Authorization") || "",
+        },
+      }).then((res) => {
+        if (res.status === 200) {
+          Message.success("创建仓库成功");
+        } else {
+          Message.error("创建仓库失败，请联系助教");
+        }
+      });
     },
   },
   created() {

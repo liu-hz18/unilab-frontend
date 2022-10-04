@@ -101,5 +101,9 @@ const API = {
     method: "post",
     url: "/student/submit-task",
   },
+  OS_CREATE_REPO: {
+    method: "post",
+    url: "/Os/CreateRepo",
+  },
 };
 export default API;
