@@ -113,7 +113,7 @@
           <p>创建仓库后，如果想更换另一种语言，请联系助教进行相关操作</p>
           <el-form ref="createRepoForm" :model="createRepoForm">
             <el-form-item label="实验" required>
-              <el-select v-model="createRepoForm.lab" placeholder="实验" element :disabled="selectDisabled">
+              <el-select v-model="createRepoForm.lab" placeholder="实验" :disabled="selectDisabled">
                 <el-option label="rCore (rust)" value="rust"></el-option>
                 <el-option label="uCore (c)" value="c"></el-option>
               </el-select>
@@ -313,13 +313,13 @@ export default {
       axios({
         ...API.CheckRepoExist,
         params: {
-          "id": localStorage.getItem("Authorization") || "",
+          id: localStorage.getItem("Authorization") || "",
         },
         headers: {
           Authorization: localStorage.getItem("Authorization") || "",
         },
-      }).then((res)=>{
-        if(res.status === 200){
+      }).then((res) => {
+        if (res.status === 200) {
           var data = res.data;
           if (data["code"] === 200) {
             Message.success("已经创建过仓库");
@@ -327,7 +327,7 @@ export default {
             this.selectDisabled = false;
             this.buttonDisabled = false;
           }
-        }else{
+        } else {
           Message.error("加载失败");
         }
       });
