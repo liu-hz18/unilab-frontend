@@ -1,21 +1,33 @@
 {
-  "name": "unilab",
+  "name": "unilab-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "prepare": "husky install",
+    "serve": "vue-cli-service serve --mode development",
+    "build": "vue-cli-service build --mode production",
+    "lint": "vue-cli-service lint",
+    "lint:eslint": "eslint {library,mock,src}/**/*.{vue,ts,tsx} --fix",
+    "lint:prettier": "prettier {library,src,mock}/**/*.{html,vue,css,sass,scss,ts,md} --write",
+    "report": "vue-cli-service build --mode production --report"
   },
   "dependencies": {
-    "axios": "^0.26.0",
-    "codemirror": "^5.65.2",
-    "core-js": "^3.8.3",
-    "element-ui": "^2.15.6",
+    "ansicolor": "^1.1.100",
+    "codemirror": "^5.65.3",
     "file-saver": "^2.0.5",
+    "less": "^4.1.2",
+    "less-loader": "^10.2.0",
+    "node-sass": "^7.0.1",
+    "sass-loader": "^12.6.0",
     "vue": "^2.6.14",
+    "axios": "^0.26.1",
+    "vue-router": "^3.5.3",
+    "vuex": "^3.6.2",
+    "es6-promise": "^4.2.8",
+    "element-ui": "^2.15.8",
     "vue-codemirror-lite": "^1.0.4",
-    "vue-meditor": "^2.1.1"
+    "vue-meditor": "^2.1.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
@@ -23,23 +35,66 @@
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
-    "eslint": "^7.32.0",
+    "babel-eslint": "^10.1.0",
+    "compression-webpack-plugin": "^9.2.0",
+    "eslint": "^8.15.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-html": "^6.2.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^8.0.3",
+    "husky": "^8.0.0",
+    "lint-staged": "^12.4.1",
+    "prettier": "2.6.2",
+    "progress-bar-webpack-plugin": "^2.1.0",
     "vue-template-compiler": "^2.6.14"
   },
   "eslintConfig": {
     "root": true,
     "env": {
+      "browser": true,
       "node": true
     },
     "extends": [
+      "eslint:recommended",
       "plugin:vue/essential",
-      "eslint:recommended"
+      "plugin:prettier/recommended"
     ],
     "parserOptions": {
-      "parser": "@babel/eslint-parser"
+      "parser": "@babel/eslint-parser",
+      "requireConfigFile": false
     },
-    "rules": {}
+    "rules": {
+      "no-unused-vars": "off",
+      "prettier/prettier": "error"
+    },
+    "plugins": [
+      "prettier",
+      "vue",
+      "html",
+      "import"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/**/*.{js,json,css,vue}": [
+      "eslint src/**/**/*.{js,vue} --fix",
+      "prettier --write",
+      "git add"
+    ],
+    "{!(package)*.json,*.code-snippets,.!(browserslist)*rc}": [
+      "prettier --write--parser json"
+    ],
+    "package.json": [
+      "prettier --write"
+    ],
+    "*.md": [
+      "prettier --write"
+    ]
   },
   "browserslist": [
     "> 1%",
